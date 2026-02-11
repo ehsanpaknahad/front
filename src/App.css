@@ -1,0 +1,329 @@
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  list-style: none;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Remove default browser styles */
+html, body {
+  height: 100%;
+  width: 100%;
+ 
+}
+ 
+
+/* Remove anchor underline */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Reset input & button */
+button, input {
+  border: none;
+  outline: none;
+  background: none;
+}
+ 
+.body-part {  
+  display: flex;  
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(105deg, #fff, #ffe4c8);
+}
+.container {
+  position: relative;
+  width: 400px;
+  height: 460px;
+  background: #fff;
+  overflow: hidden;   
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  border-radius: 16px;
+  animation: fadeIn 0.8s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.container h1{
+  
+  font-size: 32px;
+  font-weight: 700;
+  margin: -10px 0;
+}
+.container p{
+   font-size: 14.5px;
+   margin: 15px 0;
+}
+form {
+  width: 100%;
+}
+
+.map-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.map-view {
+  width: 100%;
+  height: 100%;
+}
+
+.form-box {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #333;
+   
+  z-index: 1;
+  transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
+  padding: 45px 60px;
+    
+
+}
+.input-box input:focus {
+  border: 2px solid #ff8d21;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(255, 141, 33, 0.4);
+}
+
+
+.login.active {
+  z-index: 2;
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0) ;
+}
+.login.inactive-left{
+  transform: translateX(-100%);
+  opacity: 0;
+  visibility: hidden;
+  z-index: 1;
+  transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out,
+              visibility 0s 0.6s;   /* delay hiding */
+}
+.register.active {
+  z-index: 2;
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+}
+.register.inactive-right{
+  transform: translateX(100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out,
+              visibility 0s 0.6s;  /* delay hiding */
+}
+.input-box{
+  position: relative;
+  margin: 25px 0;
+}
+
+.input-box input{
+  width: 100%;
+    
+  height: 42px;
+  padding: 13px 50px 13px 40px;
+  background: #eee;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+ 
+  color:#333;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.input-box input::placeholder{
+  color: #888;
+  font-weight: 400;
+}
+
+.input-box i{
+  position: absolute; 
+  top: 55%;
+  transform: translateY(-50%);   
+  right: 16px;
+  
+  font-size: 18px;
+  color: #888;
+  opacity: 0.7;
+}
+ 
+.btn {
+  width: 100%;
+  height: 48px;
+  
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 16px;
+  color:#fff;
+  font-weight:600;
+  background: linear-gradient(90deg, #ff8d21, #ffab4d);
+  transition: 0.3s ease;
+}
+ 
+.form-box .form-label-login{
+  margin-top: 22px;
+  margin-bottom: 6px;
+  display: block;
+}
+.form-box .form-label-register{
+  margin-top: 30px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.btn.toggle{
+  text-align: center;
+  
+  width: 160px;
+  height: 36px;
+  background: transparent;
+  border: 1.8px dashed   #f8c493;
+  box-shadow: none;
+  color: #333333;
+  font-size: 13px;
+  
+   border-radius: 50px;
+  padding: 5px 20px;
+  transition: 0.3s ease;
+   cursor: pointer;
+}
+
+
+.btn.toggle:hover {
+  background: #ffe7d2;
+  border-color: #ffb77a;
+}
+
+ .btn:hover {
+  
+  box-shadow: 0 6px 14px rgba(255, 141, 33, 0.4);
+}
+
+
+
+
+
+
+
+ 
+/* FORM OVERLAY STYLES */
+.form-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(3px);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* was: center */
+  border-radius: 16px;
+  animation: fadeIn 0.5s ease;
+}
+
+.overlay-content {
+  text-align: center;
+  margin-top: 70px; 
+  padding:30px;
+  padding-top: 0;
+  width: 90%;
+  max-width: 350px;
+}
+
+.check-icon {
+  font-size: 50px;
+  color: #31cb41;
+  margin-bottom: 20px;
+}
+
+.overlay-content h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.overlay-content p {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-size: 15px;
+}
+ 
+ 
+.call-info span {
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.close-overlay-btn {
+  background: linear-gradient(90deg, #ff8d21, #ffab4d);
+  color: white;
+  border: none;
+  padding: 5px 25px;
+  border-radius: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  
+  transition: 0.3s;
+
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;  
+}
+
+.close-overlay-btn:hover {
+  
+  box-shadow: 0 6px 14px rgba(255, 141, 33, 0.4);
+} 
+
+ 
+
+
+
+/* Make placeholder red when there's an error */
+.error-input::placeholder {
+  color: #ff4d4d !important;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* Normal placeholder color */
+.input-box input::placeholder {
+  color: #888;
+  font-weight: 400;
+}
+
+/* Error input styling */
+.error-input {
+  border: 2px solid #ff4d4d !important;
+  background-color: #fff5f5 !important;
+}
+
+.error-icon-inside {
+  position: absolute;
+  right: 250px !important; /* Position left of the user icon */
+  color: #ff4d4d !important;
+}
