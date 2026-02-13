@@ -327,3 +327,12 @@ form {
   right: 250px !important; /* Position left of the user icon */
   color: #ff4d4d !important;
 }
+
+/* Force Esri widgets to be visible */
+.esri-ui {
+  z-index: 1000 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+ 

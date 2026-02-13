@@ -3,7 +3,7 @@ import './App.css'
 import Login from './components/Login';
 import Register from './components/Register';
 import { useState } from 'react' 
-import MapView from './components/MapView'
+import MapViewer from './components/MapViewer'
  
 function App() {  
   const [activeForm, setActiveForm] = useState('login');
@@ -11,7 +11,7 @@ function App() {
 
 
   if (loggedIn) {
-    return <MapView setLoggedIn={setLoggedIn} />;
+    return <MapViewer setLoggedIn={setLoggedIn} />;
   }
 
   return (       
