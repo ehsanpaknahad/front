@@ -34,7 +34,7 @@ function Register({activeForm,setActiveForm}) {
         {username,password,info}, 
         {headers: {'Content-Type': 'application/json'}})        
   
-        console.log(response.data) 
+      //  console.log(response.data) 
         setShowMessage(true);  
       //   setUsername('')
       //   setPassword('')
@@ -43,7 +43,7 @@ function Register({activeForm,setActiveForm}) {
 
       } catch(e) {
        
-        console.log(e.response)
+      //  console.log(e.response)
         const { data, status } = e.response;
         if (status === 409 && data.field === 'username') {
          setUsernameError(data.error);

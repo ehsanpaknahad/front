@@ -4,11 +4,19 @@ import React, { useEffect, useRef } from 'react';
 import Map from '@arcgis/core/Map';
 import SceneView from '@arcgis/core/views/SceneView';
 import debounce from 'lodash/debounce';
+import axios from "axios"
  
 
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 
 function MapViewer({setLoggedIn}) {
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${appState.user.token}`
+    }
+  };
+
   function handleLogout(){
     setLoggedIn(false)
     localStorage.removeItem("token")
@@ -16,6 +24,7 @@ function MapViewer({setLoggedIn}) {
   }
 
   const mapRef = useRef(null);
+  
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -31,31 +40,53 @@ function MapViewer({setLoggedIn}) {
       map,
       camera: {
         position: [54.532, 25.908, 1000],  // [longitude, latitude, altitude]
-        tilt: 45,  // 45 degree angle
-         
-      },
-      
+        tilt: 45,  // 45 degree angle         
+      },      
     });
    
 
-    // Optional: Log when view is ready
+    
     view.when(() => {
-      console.log("3D Map is ready!");
-     
+      ///console.log("3D Map is ready!");     
       
     });
 
-   
-    // Watch for ANY changes
-    reactiveUtils.watch(
-      () => [view.heightBreakpoint, view.widthBreakpoint, view.size],
-      (val) => console.log('📊 Updated:', val)
-    );
+    
    
 
     const fetchExtent = async (extent) => {
-      console.log('Fetching data for:', extent);
+
+      const sendExtent = {
+           minX: extent.xmin,
+           minY: extent.ymin,
+           maxX: extent.xmax,
+           maxY: extent.ymax,
+      };
+
+      try {
+        // we send extent to server side - base on it server query database and return data of layers
+        const response = await axios.post('/api/query-database', {
+         params: {           
+            minX: extent.xmin,
+            minY: extent.ymin,
+            maxX: extent.xmax,
+            maxY: extent.ymax,
+         }, ...config
+        });
+
+        console.log(response.data);
+        return 
+      } catch (error) {
+        console.error('Database query failed:', error);
+        throw error;
+      }
+
        
+      // 🔥🔥🔥 need to think 
+      
+       
+
+
     };
     
     const debouncedFetch = debounce((extent) => {

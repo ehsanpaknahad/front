@@ -12,7 +12,7 @@
   "dependencies": {
     "@arcgis/core": "^4.34.8",
     "@fontsource/poppins": "^5.2.7",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "debounce": "^3.0.0",
     "google-fonts": "^1.0.0",
     "lodash": "^4.17.23",
