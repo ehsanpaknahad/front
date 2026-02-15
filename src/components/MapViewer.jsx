@@ -11,11 +11,11 @@ import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 
 function MapViewer({setLoggedIn}) {
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${appState.user.token}`
-    }
-  };
+  // const config = {
+  //   headers: {
+  //     Authorization: `Bearer ${appState.user.token}`
+  //   }
+  // };
 
   function handleLogout(){
     setLoggedIn(false)
@@ -63,23 +63,23 @@ function MapViewer({setLoggedIn}) {
            maxY: extent.ymax,
       };
 
-      try {
-        // we send extent to server side - base on it server query database and return data of layers
-        const response = await axios.post('/api/query-database', {
-         params: {           
-            minX: extent.xmin,
-            minY: extent.ymin,
-            maxX: extent.xmax,
-            maxY: extent.ymax,
-         }, ...config
-        });
+      // try {
+      //   // we send extent to server side - base on it server query database and return data of layers
+      //   const response = await axios.post('http://localhost:8080/api/query-database', {
+      //    params: {           
+      //       minX: extent.xmin,
+      //       minY: extent.ymin,
+      //       maxX: extent.xmax,
+      //       maxY: extent.ymax,
+      //    }, ...config
+      //   });
 
-        console.log(response.data);
-        return 
-      } catch (error) {
-        console.error('Database query failed:', error);
-        throw error;
-      }
+      //   console.log(response.data);
+      //   return 
+      // } catch (error) {
+      //   console.error('Database query failed:', error);
+      //   throw error;
+      // }
 
        
       // 🔥🔥🔥 need to think 

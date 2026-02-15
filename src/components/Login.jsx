@@ -15,7 +15,7 @@ function Login({activeForm,setActiveForm,setLoggedIn}) {
            {username,password}, 
            {headers: {'Content-Type': 'application/json'}})        
   
-        console.log(response.data)
+        console.log("login" ,response.data)
         if(response.data) {
            localStorage.setItem("token",response.data.token)
            localStorage.setItem("username",response.data.username)

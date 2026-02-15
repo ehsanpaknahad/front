@@ -65,15 +65,15 @@ function Register({activeForm,setActiveForm}) {
                   </div>
                   
                   <button 
-                  className="close-overlay-btn"
-                  onClick={() => {
+                   className="close-overlay-btn"
+                   onClick={() => {
                       setShowMessage(false)
                       setPassword('')
                       setUsername('')
                       setInfo('')
                      }}
                   >
-                  Close Message
+                   Close Message
                   </button>
                </div>
             </div>

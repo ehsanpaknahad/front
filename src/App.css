@@ -287,16 +287,18 @@ form {
   background: linear-gradient(90deg, #ff8d21, #ffab4d);
   color: white;
   border: none;
-  padding: 5px 25px;
+  padding: 10px 35px;
   border-radius: 28px;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   
   transition: 0.3s;
 
   position: absolute;
-  top: 20px;
-  right: 20px;
+  bottom: 110px; 
+
+   left: 50%;
+   transform: translateX(-50%); 
   z-index: 100;  
 }
 
