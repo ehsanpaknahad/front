@@ -7,6 +7,7 @@ import debounce from 'lodash/debounce';
 import axios from "axios"
  
 
+
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 
 function MapViewer({setLoggedIn}) {
@@ -31,23 +32,33 @@ function MapViewer({setLoggedIn}) {
 
     // Create the map
     const map = new Map({
-      basemap: "osm",  // OpenStreetMap basemap
+      basemap: null,   // 🚫 NO BASEMAP
+      ground: null     // 🚫 NO ELEVATION (no hillshade, no terrain, no CORS)
+
     });
 
     // Create the 3D SceneView
     const view = new SceneView({
       container: mapRef.current,
+      spatialReference: { wkid: 32640 },  // 🟢 tell ArcGIS to use UTM Zone 40N
       map,
       camera: {
         position: [54.532, 25.908, 1000],  // [longitude, latitude, altitude]
-        tilt: 45,  // 45 degree angle         
-      },      
+        tilt: 45,  // 45 degree angle   
+        spatialReference: { wkid: 32640 }      
+      }, 
+      ui: { components: [] } // ⚡ disable all default widgets     
     });
-   
+ 
+ 
+
+    
+  
+    
 
     
     view.when(() => {
-      ///console.log("3D Map is ready!");     
+     
       
     });
 
@@ -121,9 +132,9 @@ function MapViewer({setLoggedIn}) {
 
 
   return (          
-      <div className="map-container">
-        <div ref={mapRef} className="map-view" /> 
-        <button className="close-overlay-btn" onClick={ handleLogout } >
+      <div className="map-container"  >
+        <div ref={mapRef} className="map-view"   /> 
+        <button className="close-overlay-btn-logout" onClick={ handleLogout } >
             Log out
         </button>               
       </div>

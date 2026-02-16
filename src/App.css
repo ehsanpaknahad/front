@@ -16,6 +16,7 @@ html, body {
  
 }
  
+ 
 
 /* Remove anchor underline */
 a {
@@ -68,12 +69,12 @@ form {
 
 .map-container {
   width: 100vw;
-  height: 100vh;
+ 
   overflow: hidden;
 
+    height: 100vh;  
   
-
-   
+    
 }
 
 .map-view {
@@ -296,11 +297,31 @@ form {
 
   position: absolute;
   bottom: 110px; 
-
-   left: 50%;
-   transform: translateX(-50%); 
-  z-index: 100;  
+   
+  /* the button does nt stay at the center of form:  */
+  left: 50%;  /* move left edge to center */
+  transform: translateX(-50%); /* shift left by half width */
+   
 }
+
+
+.close-overlay-btn-logout {
+  background: linear-gradient(90deg, #ff8d21, #ffab4d);
+  color: white;
+  border: none;
+  padding: 5px 25px;
+  border-radius: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  
+  transition: 0.3s;
+
+  position: absolute;
+  top: 10px; 
+   
+  right:10px;
+}
+
 
 .close-overlay-btn:hover {
   
