@@ -11,14 +11,19 @@ function Login({activeForm,setActiveForm,setLoggedIn}) {
    async function handleLoginSubmit(e) {
       e.preventDefault()  
       try {  
-        const response = await axios.post('http://localhost:8080/user/login',
+        const response = await axios.post('/user/login',
            {username,password}, 
            {headers: {'Content-Type': 'application/json'}})        
   
-        console.log("login" ,response.data)
+        console.log("login:",response.data)
         if(response.data) {
            localStorage.setItem("token",response.data.token)
            localStorage.setItem("username",response.data.username)
+           localStorage.setItem("role",response.data.role)
+           localStorage.setItem("geometryEditing",response.data.geometryEditing)
+           localStorage.setItem("attributeEditing",response.data.attributeEditing)     
+
+
            setLoggedIn(true)
            setPassword('')
            setUsername('')  

@@ -30,7 +30,7 @@ function Register({activeForm,setActiveForm}) {
       e.preventDefault()
   
       try {  
-        const response = await axios.post('http://localhost:8080/user/register',
+        const response = await axios.post('/user/register',
         {username,password,info}, 
         {headers: {'Content-Type': 'application/json'}})        
   
