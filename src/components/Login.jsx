@@ -1,12 +1,14 @@
   
 import { FaUser } from "react-icons/fa";
 import { FaLock } from "react-icons/fa";
-import { useState } from 'react' 
+import { useState,useContext } from 'react' 
 import axios from 'axios';
+import DispatchContext from "../DispatchContext";
 
-function Login({activeForm,setActiveForm,setLoggedIn}) {
-   const [username,setUsername] = useState('')
-   const [password,setPassword] = useState('')
+function Login({activeForm,setActiveForm}) {
+   const [username,setUsername] = useState('');
+   const [password,setPassword] = useState('');
+   const appDispatch = useContext(DispatchContext);
 
    async function handleLoginSubmit(e) {
       e.preventDefault()  
@@ -17,14 +19,8 @@ function Login({activeForm,setActiveForm,setLoggedIn}) {
   
         console.log("login:",response.data)
         if(response.data) {
-           localStorage.setItem("token",response.data.token)
-           localStorage.setItem("username",response.data.username)
-           localStorage.setItem("role",response.data.role)
-           localStorage.setItem("geometryEditing",response.data.geometryEditing)
-           localStorage.setItem("attributeEditing",response.data.attributeEditing)     
-
-
-           setLoggedIn(true)
+             
+           appDispatch({ type: "login", data: response.data })
            setPassword('')
            setUsername('')  
          } else {

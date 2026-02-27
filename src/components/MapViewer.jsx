@@ -1,16 +1,20 @@
 
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef,useContext } from 'react';
 import Map from '@arcgis/core/Map';
 import SceneView from '@arcgis/core/views/SceneView';
 import debounce from 'lodash/debounce';
 import axios from "axios"
+import DispatchContext from '../DispatchContext';
+import StateContext from '../stateContext';
 
 
 
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 
-function MapViewer({setLoggedIn}) {
+function MapViewer() {
+  const appState = useContext(StateContext)
+  const appDispatch = useContext(DispatchContext);
 
   const config = {
     headers: {
@@ -19,12 +23,7 @@ function MapViewer({setLoggedIn}) {
   };
 
   function handleLogout(){
-    setLoggedIn(false)
-    localStorage.removeItem("token")
-    localStorage.removeItem("username")
-    localStorage.removeItem("role")
-    localStorage.removeItem("geometryEditing")
-    localStorage.removeItem("attributeEditing")  
+    appDispatch({type: 'logout'}) 
   }
 
   const mapRef = useRef(null);
@@ -35,43 +34,30 @@ function MapViewer({setLoggedIn}) {
 
     // Create the map
     const map = new Map({
-     // basemap: "osm",  // 🚫 NO BASEMAP
-          // 🚫 NO ELEVATION (no hillshade, no terrain, no CORS)
-         basemap: 'topo-vector'
+      basemap: null,   // No basemap
+      ground: null     // No elevation surface
     });
 
     // Create the 3D SceneView
     const view = new SceneView({
       container: mapRef.current,
-    //  spatialReference: { wkid: 32640 },  // 🟢 tell ArcGIS to use UTM Zone 40N
+      spatialReference: { wkid: 32640 },  // 🟢 tell ArcGIS to use UTM Zone 40N
       map,
       camera: {
-       // position: [54.532, 25.908, 1000],  // [longitude, latitude, altitude]
-       position: [54.532, 25.908, 500],
+        position: [253395.7, 2867731.1, 500],
         tilt: 45,  // 45 degree angle
-       // spatialReference: { wkid: 32640 }
+        spatialReference: { wkid: 32640 }
       },
       ui: { components: [] } // ⚡ disable all default widgets
     });
 
-
-
-
-
-
-
-
     view.when(() => {
-
-
+      console.log(view.extent)
     });
-
-
 
 
     const fetchExtent = async (extent) => {
 
-       
       try {
         // we send extent to server side - base on it server query database and return data of layers
         const response = await axios.post('/api/query-with-extent',
@@ -91,21 +77,12 @@ function MapViewer({setLoggedIn}) {
         throw error;
       }
 
-
-      // 🔥🔥🔥 need to think
-
-
-
-
     };
 
     const debouncedFetch = debounce((extent) => {
      // console.log('🔥 ACTUAL FETCH at', Date.now(), 'for extent', extent);
       fetchExtent(extent)
     }, 1500); //wait 1 second ; in case user does nt move screen extent ; then trigger fetchExtent function
-
-
-
 
     const handleWatch = reactiveUtils.watch(
       () => view.stationary,
@@ -115,9 +92,6 @@ function MapViewer({setLoggedIn}) {
         }
       }
     );
-
-
-
 
     // Cleanup on component unmount
     return () => {
