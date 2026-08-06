@@ -1,0 +1,38 @@
+ {
+  "compilerOptions": {
+    // Environment Settings
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    
+    // Vite handles output, so TypeScript doesn't emit files
+    "noEmit": true,  // ← This is correct for Vite!
+    "isolatedModules": true,
+    
+    // Strictness (Recommended)
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    
+    // Module Settings
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    
+    // Remove these - they conflict with noEmit:
+    // "sourceMap": true,        ← REMOVE
+    // "declaration": true,      ← REMOVE  
+    // "declarationMap": true,   ← REMOVE
+    
+    // Remove this if you're not strict about it:
+    // "exactOptionalPropertyTypes": true  ← OPTIONAL (can be strict)
+  },
+  "include": ["src"]
+}

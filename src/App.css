@@ -1,4 +1,5 @@
-
+/* src/index.css or src/App.css */
+@import '/assets/esri/themes/light/main.css';
 
 * {
   margin: 0;
@@ -6,17 +7,22 @@
   box-sizing: border-box;
   text-decoration: none;
   list-style: none;
-  font-family: "Poppins", sans-serif;
+  /* font-family: "Poppins", sans-serif; */
 }
 
 /* Remove default browser styles */
-html, body {
-  height: 100%;
+
+
+ html, body {
+  margin: 0;
+  padding: 0;
   width: 100%;
- 
+  height: 100%;
+  overflow: hidden;
 }
- 
- 
+body {
+  font-family: "Avenir Next", "Avenir", "Helvetica Neue", sans-serif;
+}
 
 /* Remove anchor underline */
 a {
@@ -30,9 +36,25 @@ button, input {
   outline: none;
   background: none;
 }
- 
-.body-part {  
-  display: flex;  
+
+:root {
+  --calcite-color-brand:#6D29CC   ;   /* #282260 */
+  --calcite-color-focus: #B580FF;
+}
+.accordion-toolbar {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    border-bottom: 1px solid var(--calcite-color-border-2);
+    flex-shrink: 0;
+    padding-inline-end: 0px;
+      justify-content: flex-end;
+}
+
+
+
+.body-part {
+  display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -43,7 +65,7 @@ button, input {
   width: 400px;
   height: 460px;
   background: #fff;
-  overflow: hidden;   
+  overflow: hidden;
   box-shadow: 0 8px 30px rgba(0,0,0,0.12);
   border-radius: 16px;
   animation: fadeIn 0.8s ease;
@@ -54,7 +76,7 @@ button, input {
 }
 
 .container h1{
-  
+
   font-size: 32px;
   font-weight: 700;
   margin: -10px 0;
@@ -68,20 +90,23 @@ form {
 }
 
 .map-container {
-  width: 100vw;
- 
-  overflow: hidden;
-
-    height: 100vh;  
-  
-    
+  position:relative;
+  width: 100%;
+  height: 100vh;
 }
 
 .map-view {
   width: 100%;
-  height: 100%;
+  height: 100vh;
+}
 
-  
+.attribute-container{
+    position:absolute;
+    top:15px;
+    right:15px;
+    width:340px;
+    max-height:80%;
+    z-index:10;
 }
 
 .form-box {
@@ -93,11 +118,11 @@ form {
   align-items: center;
   text-align: center;
   color: #333;
-   
+
   z-index: 1;
   transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
   padding: 45px 60px;
-    
+
 
 }
 .input-box input:focus {
@@ -141,14 +166,14 @@ form {
 
 .input-box input{
   width: 100%;
-    
+
   height: 42px;
   padding: 13px 50px 13px 40px;
   background: #eee;
   border-radius: 10px;
   border: none;
   outline: none;
- 
+
   color:#333;
   font-weight: 500;
   font-size: 15px;
@@ -160,20 +185,20 @@ form {
 }
 
 .input-box i{
-  position: absolute; 
+  position: absolute;
   top: 55%;
-  transform: translateY(-50%);   
+  transform: translateY(-50%);
   right: 16px;
-  
+
   font-size: 18px;
   color: #888;
   opacity: 0.7;
 }
- 
+
 .btn {
   width: 100%;
   height: 48px;
-  
+
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border: none;
@@ -185,7 +210,7 @@ form {
   background: linear-gradient(90deg, #ff8d21, #ffab4d);
   transition: 0.3s ease;
 }
- 
+
 .form-box .form-label-login{
   margin-top: 22px;
   margin-bottom: 6px;
@@ -199,7 +224,7 @@ form {
 
 .btn.toggle{
   text-align: center;
-  
+
   width: 160px;
   height: 36px;
   background: transparent;
@@ -207,7 +232,7 @@ form {
   box-shadow: none;
   color: #333333;
   font-size: 13px;
-  
+
    border-radius: 50px;
   padding: 5px 20px;
   transition: 0.3s ease;
@@ -220,18 +245,10 @@ form {
   border-color: #ffb77a;
 }
 
- .btn:hover {
-  
+.btn:hover {
   box-shadow: 0 6px 14px rgba(255, 141, 33, 0.4);
 }
 
-
-
-
-
-
-
- 
 /* FORM OVERLAY STYLES */
 .form-overlay {
   position: absolute;
@@ -251,7 +268,7 @@ form {
 
 .overlay-content {
   text-align: center;
-  margin-top: 70px; 
+  margin-top: 70px;
   padding:30px;
   padding-top: 0;
   width: 90%;
@@ -276,8 +293,8 @@ form {
   line-height: 1.5;
   font-size: 15px;
 }
- 
- 
+
+
 .call-info span {
   color: #333;
   font-size: 14px;
@@ -292,16 +309,16 @@ form {
   border-radius: 28px;
   font-size: 16px;
   cursor: pointer;
-  
+
   transition: 0.3s;
 
   position: absolute;
-  bottom: 110px; 
-   
+  bottom: 110px;
+
   /* the button does nt stay at the center of form:  */
   left: 50%;  /* move left edge to center */
   transform: translateX(-50%); /* shift left by half width */
-   
+
 }
 
 
@@ -313,22 +330,22 @@ form {
   border-radius: 28px;
   font-size: 14px;
   cursor: pointer;
-  
+
   transition: 0.3s;
 
   position: absolute;
-  top: 10px; 
-   
+  top: 10px;
+
   right:10px;
 }
 
 
 .close-overlay-btn:hover {
-  
-  box-shadow: 0 6px 14px rgba(255, 141, 33, 0.4);
-} 
 
- 
+  box-shadow: 0 6px 14px rgba(255, 141, 33, 0.4);
+}
+
+
 
 
 
@@ -364,4 +381,212 @@ form {
   visibility: visible !important;
 }
 
+ 
+
+.feature-panel{
+    position:absolute;
+    top:60px;
+    right:15px;
+    width:380px;
+  
+    z-index:100;
+    max-height: 50vh;
+}
+.accordion-content {
+    max-height: 30vh;
+    overflow-y: auto;
+} 
+ 
+calcite-accordion {
+    overflow: hidden;
+   
+}
+ 
+ 
+.feature-panel-header{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 16px;
+    background:#f8f8f8;
+    border-bottom:1px solid #e5e5e5;
+    color:#323232;
+}
+
+.feature-panel-header-info{
+  display:flex;
+  flex-direction: row;
+  gap:20px;
+  padding-left: 10px;
+}
+
+.panel-close-btn{
+    padding:4px;
+    min-width:32px;
+}
+ 
+
+
+.attribute-list{
+
+    overflow:visible;
+}
+
+.attribute-row{
+
+    display:grid;
+
+    grid-template-columns:120px 1fr;
+
+    gap:10px;
+
+    padding:10px 14px;
+
+    border-bottom:1px solid var(--calcite-color-border-3);
+}
+
+.attribute-row:hover{
+
+    background:var(--calcite-color-foreground-2);
+}
+
+.attribute-name{
+
+    font-weight:600;
+
+    color:var(--calcite-color-text-2);
+}
+
+.attribute-value{
+
+    word-break:break-word;
+}
+
+
+
+
+.feature-row:hover {
+    background-color:#f8e6d4;
+}
+
+.feature-row strong{
+
+    display:block;
+
+    color:#666;
+
+    font-size:.9rem;
+
+}
+
+.feature-row span{
+
+    display:block;
+
+    margin-top:3px;
+
+}
+
+
+
+.feature-tabs button {
+
+    flex:1;
+    padding:6px 20px;
+    cursor:pointer;
+    background:white;
+    color:#ff8d21;
+    cursor:pointer;
+
+    font-size:13px;
+    font-weight:500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 8px;
+
+    transition: all 0.2s ease;
+
+    border: none;
+    border-right: 1px solid #ff8d21;; /* Separator */
+    box-sizing: border-box;
+}
+
+.feature-tabs button:last-child {
+    border-right: none;
+}
+
+
+.feature-tabs button:hover {
+
+    color:white;
+     background:#fb9c44;
+
+}
+
+
+
+.active-tab {
+
+    font-weight:bold;
+
+}
+
+
+.feature-panel-body {
+
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  color: #323232;
+}
+
+
+.esri-feature-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: white;
+  border: 1px solid #d6d6d6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+
+.esri-feature-table thead {
+  background-color: #f3f3f3;
+}
+
+
+.esri-feature-table th {
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ccc;
+  color: #4c4c4c;
+}
+
+
+.esri-feature-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #e5e5e5;
+  font-family: "Consolas", monospace;
+}
+
+
+.esri-feature-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+
+.esri-feature-table tbody tr:hover {
+  background-color: #e8f1fb;
+}
+
+
+.esri-feature-table tbody tr:last-child td {
+  border-bottom: none;
+}
+ 
  

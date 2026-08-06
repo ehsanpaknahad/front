@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@arcgis/core": "^4.34.8",
+    "@esri/calcite-components": "^3.3.2",
     "@fontsource/poppins": "^5.2.7",
+    "@types/jest": "^30.0.0",
     "axios": "^1.13.5",
     "debounce": "^3.0.0",
     "google-fonts": "^1.0.0",
@@ -27,7 +29,8 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/arcgis-js-api": "^4.27.2",
-    "@types/react": "^19.2.13",
+    "@types/lodash": "^4.17.24",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "baseline-browser-mapping": "^2.9.19",

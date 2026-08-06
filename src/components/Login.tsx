@@ -1,26 +1,29 @@
   
 import { FaUser } from "react-icons/fa";
 import { FaLock } from "react-icons/fa";
-import { useState,useContext } from 'react' 
+import { useState } from 'react' 
 import axios from 'axios';
-import DispatchContext from "../DispatchContext";
+import { useAuth } from "../auth/AuthProvider.js";
 
 function Login({activeForm,setActiveForm}) {
    const [username,setUsername] = useState('');
    const [password,setPassword] = useState('');
-   const appDispatch = useContext(DispatchContext);
+   const { login } = useAuth();
 
    async function handleLoginSubmit(e) {
       e.preventDefault()  
       try {  
+          
         const response = await axios.post('/user/login',
            {username,password}, 
            {headers: {'Content-Type': 'application/json'}})        
   
-        console.log("login:",response.data)
+          // console.log("login:",response.data)
+           
         if(response.data) {
-             
-           appDispatch({ type: "login", data: response.data })
+
+           login(response.data);   
+            
            setPassword('')
            setUsername('')  
          } else {
