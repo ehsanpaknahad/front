@@ -1,14 +1,17 @@
 import AttributeTable from "./AttributeTable";
 
 import GeometryTable from "./GeometryTable";
+import { useState } from "react";
 
 type Props = {
   feature: Record<string, any> | null;
   onClose: () => void;
 };
 
-function FeaturePanel({ feature, onClose }: Props) {
+function FeaturePanel({ feature,onVertexClick, onClose }: Props) {
   if (!feature) return null;
+
+
 
   return (
     <div className="feature-panel">
@@ -24,52 +27,18 @@ function FeaturePanel({ feature, onClose }: Props) {
           onClick={onClose}
         />
 
-       
-
         <calcite-accordion>
           <calcite-accordion-item heading="Attributes" icon-start="table">
-            <div className="accordion-toolbar">
-              <calcite-button
-                kind="neutral"
-                icon-start="pencil"
-                text="Edit"
-              ></calcite-button>
-
-              <calcite-button 
-                kind="neutral" 
-                icon-start="save"
-              ></calcite-button>
-
-              <calcite-button
-                kind="neutral"
-                icon-start="trash"
-              ></calcite-button>
-            </div>
+           
             <div className="accordion-content">
               <AttributeTable feature={feature} />
             </div>
           </calcite-accordion-item>
 
           <calcite-accordion-item icon-start="vertex-edit" heading="Geometry">
-             <div className="accordion-toolbar">
-              <calcite-button
-                kind="neutral"
-                icon-start="pencil"
-                text="Edit"
-              ></calcite-button>
-
-              <calcite-button 
-                kind="neutral" 
-                icon-start="save"
-              ></calcite-button>
-
-              <calcite-button
-                kind="neutral"
-                icon-start="trash"
-              ></calcite-button>
-            </div>
+            
             <div className="accordion-content">
-              <GeometryTable coordinates={feature.coordinates} />
+              <GeometryTable coordinates={feature.coordinates}  onVertexClick={onVertexClick}/>
             </div>
           </calcite-accordion-item>
         </calcite-accordion>

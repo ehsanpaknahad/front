@@ -1,12 +1,9 @@
- 
- 
-import { useEffect, useRef ,useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import ArcGISMap from "@arcgis/core/Map.js";
 import SceneView from "@arcgis/core/views/SceneView.js";
 import debounce from "lodash/debounce";
 import axios from "axios";
 import FeaturePanel from "./FeaturePanel.js";
-
 
 import drawFeatures from "../map/DrawFeatures.js";
 import { useAuth } from "../auth/AuthProvider.js";
@@ -18,27 +15,30 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 import type { LayerInfo } from "../types/interface.js";
 
+import Graphic from "@arcgis/core/Graphic.js";
+import Point from "@arcgis/core/geometry/Point.js";
+
 export interface LayerManagerItem {
   graphicsLayer: GraphicsLayer;
   color: string;
   graphicsMap: Map<string, any>; // or use proper Graphic type
   minZoom: number;
   maxZoom: number;
-  layerName:string;
-   renderer_type:string;
+  layerName: string;
+  renderer_type: string;
 }
 
 export interface LayerManager {
   [key: string]: LayerManagerItem; // Index signature
 }
 
-
 function MapViewer() {
-   
   const mapRef = useRef(null);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const layerManagerRef = useRef<LayerManager>({});
   const selectedGraphicRef = useRef<any>(null);
+  const [selectedVertex, setSelectedVertex] = useState(null);
+  const selectedVertexLayerRef = useRef(null);
 
   const { state, logout } = useAuth();
   const config = {
@@ -52,10 +52,9 @@ function MapViewer() {
   }
 
   useEffect(() => {
-
     if (!mapRef.current) return;
 
-    const map = new ArcGISMap({}); 
+    const map = new ArcGISMap({});
 
     const view = new SceneView({
       container: mapRef.current,
@@ -63,66 +62,65 @@ function MapViewer() {
       map,
       camera: {
         position: {
-            x: 54.537,  // longitude
-            y: 25.904,  // latitude
-            z: 400,     // height in meters
-            spatialReference: { wkid: 4326 }  // WGS84 geographic
-         },
+          x: 54.537, // longitude
+          y: 25.904, // latitude
+          z: 400, // height in meters
+          spatialReference: { wkid: 4326 }, // WGS84 geographic
+        },
         tilt: 40,
       },
     });
 
+    const vertexLayer = new GraphicsLayer({
+      title: "Selected Vertex",
+      elevationInfo: {
+        mode: "absolute-height",
+      },
+    });
+
+    selectedVertexLayerRef.current = vertexLayer;
+
+    map.add(vertexLayer);
+
     const initialize = async () => {
-       const layers =  await getLayersList(config,);
-      
-       layers.forEach((layerInfo:LayerInfo) => {
-          const graphicsLayer = new GraphicsLayer({
-            title: layerInfo.alias,
-            visible: layerInfo.visible,
-            elevationInfo: { mode: "absolute-height" }
-          });
-          
-          map.add(graphicsLayer);
-          layerManagerRef.current[layerInfo.layer_name] = {
-            graphicsLayer,
-            color: layerInfo.color,
-            graphicsMap: new Map(),
-            minZoom: layerInfo.min_zoom,
-            maxZoom: layerInfo.max_zoom,
-            layerName:layerInfo.layer_name,
-            renderer_type:layerInfo.renderer_type,
-             
-          };
+      const layers = await getLayersList(config);
+
+      layers.forEach((layerInfo: LayerInfo) => {
+        const graphicsLayer = new GraphicsLayer({
+          title: layerInfo.alias,
+          visible: layerInfo.visible,
+          elevationInfo: { mode: "absolute-height" },
         });
+
+        map.add(graphicsLayer);
+        layerManagerRef.current[layerInfo.layer_name] = {
+          graphicsLayer,
+          color: layerInfo.color,
+          graphicsMap: new Map(),
+          minZoom: layerInfo.min_zoom,
+          maxZoom: layerInfo.max_zoom,
+          layerName: layerInfo.layer_name,
+          renderer_type: layerInfo.renderer_type,
+        };
+      });
     };
     initialize();
 
-    const debouncedFetch = debounce(async(extent: Extent) => {
-     const data = await fetchExtent(
-        extent,
-        layerManagerRef,
-        config
-      );
+    const debouncedFetch = debounce(async (extent: Extent) => {
+      const data = await fetchExtent(extent, layerManagerRef, config);
 
       if (!data) return;
 
       Object.entries(data).forEach(([layerName, features]) => {
-         
         if (layerName.includes("_error")) {
           console.error(features);
           return;
         }
 
-        drawFeatures(
-          layerName,
-          features,
-          layerManagerRef
-        );
-
+        drawFeatures(layerName, features, layerManagerRef);
       });
-
     }, 1500);
-   
+
     const handleWatch = reactiveUtils.watch(
       () => view.stationary,
       (isStationary: boolean) => {
@@ -133,49 +131,41 @@ function MapViewer() {
     );
 
     const zoomHandle = reactiveUtils.watch(
-        () => view.zoom,
-        (zoom) => {
-            //console.log('Current zoom:', zoom); // Add this line
-            Object.values(layerManagerRef.current)
-                .forEach((layer:any) => {
-
-                    layer.graphicsLayer.visible =
-                        zoom >= layer.minZoom &&
-                        zoom <= layer.maxZoom;
-
-                });
-        }
+      () => view.zoom,
+      (zoom) => {
+        //console.log('Current zoom:', zoom); // Add this line
+        Object.values(layerManagerRef.current).forEach((layer: any) => {
+          layer.graphicsLayer.visible =
+            zoom >= layer.minZoom && zoom <= layer.maxZoom;
+        });
+      },
     );
 
     view.on("click", async (event) => {
-        const response = await view.hitTest(event);
+      const response = await view.hitTest(event);
 
-        if (!response.results.length)
-            return;
+      if (!response.results.length) return;
 
-        //const graphic = response.results[0].graphic;
+      //const graphic = response.results[0].graphic;
 
-       
+      const hit = response.results[0] as __esri.GraphicHit;
+      const graphic = hit.graphic;
 
-        const hit = response.results[0] as __esri.GraphicHit;
-        const graphic = hit.graphic;
-        
-        highlightGraphic(
-            graphic,
-            selectedGraphicRef
-        );
-       
-        const result = await axios.post(
-          "/api/feature-info",
-          {
-            layerName: graphic.attributes.layerName,
-            id: graphic.attributes.id
-          },
-          config
-        );
+      highlightGraphic(graphic, selectedGraphicRef);
 
-        setSelectedFeature({...result.data,layerName: graphic.attributes.layerName});
-        
+      const result = await axios.post(
+        "/api/feature-info",
+        {
+          layerName: graphic.attributes.layerName,
+          id: graphic.attributes.id,
+        },
+        config,
+      );
+
+      setSelectedFeature({
+        ...result.data,
+        layerName: graphic.attributes.layerName,
+      });
     });
 
     return () => {
@@ -186,39 +176,150 @@ function MapViewer() {
         zoomHandle.remove();
       }
     };
-  }, []);  
+  }, []);
+
+useEffect(() => {
+  const layer = selectedVertexLayerRef.current;
+
+  if (!layer) return;
+
+  layer.removeAll();
+
+  if (!selectedVertex) return;
+
+  const [x, y, z] = selectedVertex.coordinate;
+
+  // --------------------------------------------------
+  // 1. Actual vertex + vertical callout
+  // --------------------------------------------------
+
+  const vertexPoint = new Point({
+    x,
+    y,
+    z,
+    spatialReference: { wkid: 32640 },
+  });
+
+  const vertexGraphic = new Graphic({
+    geometry: vertexPoint,
+
+    symbol: {
+      type: "point-3d",
+
+      symbolLayers: [
+        {
+          type: "icon",
+          resource: {
+            primitive: "circle",
+          },
+          material: {
+            color: "black",
+          },
+          size: 6,
+        },
+      ],
+
+      verticalOffset: {
+        screenLength: 75,
+        maxWorldLength: 1000,
+        minWorldLength: 30,
+      },
+
+      callout: {
+        type: "line",
+        size: 1,
+        color: [0, 0, 0, 1],
+        border: {
+          color: [255, 255, 255, 0.7],
+        },
+      },
+    },
+  });
+
+  // --------------------------------------------------
+  // 2. Elevation text at the top
+  // --------------------------------------------------
+
+  const textPoint = new Point({
+    x,
+    y,
+    z: z + 30,
+    spatialReference: { wkid: 32640 },
+  });
+
+  const textGraphic = new Graphic({
+    geometry: textPoint,
+
+    symbol: {
+      type: "point-3d",
+
+      symbolLayers: [
+        {
+          type: "text",
+
+          text: `Z: ${z.toFixed(3)} m`,
+
+          size: 14,
+
+          material: {
+            color: "black",
+          },
+
+          halo: {
+            color: [255, 255, 255, 0.8],
+            size: 1,
+          },
+
+          horizontalAlignment: "center",
+          verticalAlignment: "middle",
+        },
+      ],
+    },
+  });
+
+  // Add both graphics
+  layer.addMany([
+    vertexGraphic,
+    textGraphic,
+  ]);
+}, [selectedVertex]);
+
+  const handleVertexClick = (coordinate, index) => {
+    setSelectedVertex({
+      coordinate,
+      index,
+    });
+    console.log("Clicked vertex:", coordinate);
+    console.log(selectedVertex);
+
+    // Do whatever you need with SceneView here
+  };
 
   const handleClose = () => {
-
     if (selectedGraphicRef.current) {
+      selectedGraphicRef.current.symbol =
+        selectedGraphicRef.current.attributes.originalSymbol;
 
-        selectedGraphicRef.current.symbol =
-            selectedGraphicRef.current.attributes.originalSymbol;
-
-        selectedGraphicRef.current = null;
+      selectedGraphicRef.current = null;
     }
 
     setSelectedFeature(null);
-};
-
+  };
 
   return (
-    
     <div className="map-container">
       <div ref={mapRef} className="map-view" />
-    
- 
-      <FeaturePanel
-      feature={selectedFeature}
-      onClose={handleClose}
-      />
 
+      <FeaturePanel
+        onVertexClick={handleVertexClick}
+        feature={selectedFeature}
+        onClose={handleClose}
+      />
 
       <button className="close-overlay-btn-logout" onClick={handleLogout}>
         Log out
       </button>
     </div>
-   
   );
 }
 
