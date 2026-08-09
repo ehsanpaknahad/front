@@ -178,111 +178,98 @@ function MapViewer() {
     };
   }, []);
 
-useEffect(() => {
-  const layer = selectedVertexLayerRef.current;
+  useEffect(() => {
+    const layer = selectedVertexLayerRef.current;
+    if (!layer || !selectedVertex) return;
 
-  if (!layer) return;
+    // Clear previous graphics and labels
+    layer.removeAll();
+    layer.labelingInfo = []; // Clear existing labeling info
 
-  layer.removeAll();
+    const [x, y, z] = selectedVertex.coordinate;
 
-  if (!selectedVertex) return;
+    // Create point geometry
+    const point = new Point({
+      x: x,
+      y: y,
+      z: z || 0,
+      spatialReference: { wkid: 32640 },
+    });
+    const graphic = new Graphic({
+      geometry: point,
 
-  const [x, y, z] = selectedVertex.coordinate;
+      symbol: {
+        type: "point-3d",
 
-  // --------------------------------------------------
-  // 1. Actual vertex + vertical callout
-  // --------------------------------------------------
-
-  const vertexPoint = new Point({
-    x,
-    y,
-    z,
-    spatialReference: { wkid: 32640 },
-  });
-
-  const vertexGraphic = new Graphic({
-    geometry: vertexPoint,
-
-    symbol: {
-      type: "point-3d",
-
-      symbolLayers: [
-        {
-          type: "icon",
-          resource: {
-            primitive: "circle",
+        symbolLayers: [
+          {
+            type: "icon",
+            resource: {
+              primitive: "circle",
+            },
+            size: 6,
+            material: {
+              color: "black",
+            },
           },
-          material: {
-            color: "black",
-          },
-          size: 6,
+        ],
+
+        verticalOffset: {
+          screenLength: 30,
+          maxWorldLength: 3,
+          minWorldLength: 3,
         },
-      ],
 
-      verticalOffset: {
-        screenLength: 75,
-        maxWorldLength: 1000,
-        minWorldLength: 30,
-      },
-
-      callout: {
-        type: "line",
-        size: 1,
-        color: [0, 0, 0, 1],
-        border: {
-          color: [255, 255, 255, 0.7],
+        callout: {
+          type: "line",
+          size: 1,
+          color: "black",
         },
       },
-    },
-  });
+    });
 
-  // --------------------------------------------------
-  // 2. Elevation text at the top
-  // --------------------------------------------------
+    // 2. Text at the top of the callout
+    const textPoint = new Point({
+      x,
+      y,
+      z: (z || 0) + 3.7,
+      spatialReference: { wkid: 32640 },
+    });
 
-  const textPoint = new Point({
-    x,
-    y,
-    z: z + 30,
-    spatialReference: { wkid: 32640 },
-  });
+    const textGraphic = new Graphic({
+      geometry: textPoint,
 
-  const textGraphic = new Graphic({
-    geometry: textPoint,
+      symbol: {
+        type: "point-3d",
 
-    symbol: {
-      type: "point-3d",
+       
 
-      symbolLayers: [
-        {
-          type: "text",
+        symbolLayers: [
+          {
+            type: "text",
 
-          text: `Z: ${z.toFixed(3)} m`,
+            text: `Z: ${z.toFixed(3)} m`,
 
-          size: 14,
+            size: 14,
 
-          material: {
-            color: "black",
+            material: {
+              color: "black",
+            },
+
+            halo: {
+              color: "white",
+              size: 1,
+            },
+
+            horizontalAlignment: "center",
+            verticalAlignment: "middle",
           },
+        ],
+      },
+    });
 
-          halo: {
-            color: [255, 255, 255, 0.8],
-            size: 1,
-          },
-
-          horizontalAlignment: "center",
-          verticalAlignment: "middle",
-        },
-      ],
-    },
-  });
-
-  // Add both graphics
-  layer.addMany([
-    vertexGraphic,
-    textGraphic,
-  ]);
-}, [selectedVertex]);
+    layer.addMany([graphic, textGraphic]);
+  }, [selectedVertex]);
 
   const handleVertexClick = (coordinate, index) => {
     setSelectedVertex({
