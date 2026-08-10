@@ -56,7 +56,6 @@ input {
   /* Border */
   /* --calcite-color-border-1:#d9d9d9; */
 }
- 
 
 .accordion-toolbar {
   display: flex;
@@ -75,13 +74,26 @@ input {
   min-height: 100vh;
   background: linear-gradient(105deg, #fff, #ffe4c8);
 }
-
-.geometry-table-toolbar {
-    display: flex;
-    gap: 6px;
-    padding: 4px;
-    
+.geometry-table-container {
+  display: flex;
+  flex-direction: column;
+ 
 }
+.geometry-table-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  padding-bottom: 8px;
+  
+
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  background: var(--calcite-color-foreground-1);
+}
+
+
 .container {
   position: relative;
   width: 400px;
