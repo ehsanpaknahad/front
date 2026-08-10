@@ -74,7 +74,7 @@ function GeometryTable({ coordinates, onVertexClick }) {
         {coordinates.map((coord, index) => (
           <calcite-table-row
             key={index}
-            onClick={() => onVertexClick(coord, index)}
+            onClick={() => isEditMode && onVertexClick(coord, index)}
           >
             <calcite-table-cell>{coord[0].toFixed(3)}</calcite-table-cell>
             <calcite-table-cell>{coord[1].toFixed(3)}</calcite-table-cell>
