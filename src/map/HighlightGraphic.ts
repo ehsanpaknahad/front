@@ -26,7 +26,7 @@ function highlightGraphic(
 
             const pathLayer = symbol.symbolLayers.getItemAt(0);
 
-            pathLayer.width = pathLayer.width * 1.5;
+            pathLayer.width = pathLayer.width * 1.03;
             pathLayer.material.color = "cyan";
 
             break;

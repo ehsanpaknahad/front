@@ -184,7 +184,7 @@ function MapViewer() {
 
     // Clear previous graphics and labels
     layer.removeAll();
-    layer.labelingInfo = []; // Clear existing labeling info
+    
 
     const [x, y, z] = selectedVertex.coordinate;
 
@@ -207,9 +207,9 @@ function MapViewer() {
             resource: {
               primitive: "circle",
             },
-            size: 6,
+            size: 10,
             material: {
-              color: "black",
+              color:"#974dff",
             },
           },
         ],
@@ -222,8 +222,8 @@ function MapViewer() {
 
         callout: {
           type: "line",
-          size: 1,
-          color: "black",
+          size: 1.5,
+          color: "#974dff",
         },
       },
     });
@@ -232,7 +232,7 @@ function MapViewer() {
     const textPoint = new Point({
       x,
       y,
-      z: (z || 0) + 3.7,
+      z: (z || 0) + 3.8,
       spatialReference: { wkid: 32640 },
     });
 
@@ -241,8 +241,6 @@ function MapViewer() {
 
       symbol: {
         type: "point-3d",
-
-       
 
         symbolLayers: [
           {
@@ -253,11 +251,12 @@ function MapViewer() {
             size: 14,
 
             material: {
-              color: "black",
+              color: "#974dff", /* #282260 */
+ 
             },
 
             halo: {
-              color: "white",
+              color: "#ffffff",
               size: 1,
             },
 
