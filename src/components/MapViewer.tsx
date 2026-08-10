@@ -146,11 +146,18 @@ function MapViewer() {
 
       if (!response.results.length) return;
 
-      //const graphic = response.results[0].graphic;
-
       const hit = response.results[0] as __esri.GraphicHit;
       const graphic = hit.graphic;
 
+      // Remove previous vertex callout and text
+      const vertexLayer = selectedVertexLayerRef.current;
+      if (vertexLayer) {
+        vertexLayer.removeAll();
+      }
+
+      setSelectedVertex(null);
+
+      // Highlight the newly selected feature
       highlightGraphic(graphic, selectedGraphicRef);
 
       const result = await axios.post(
@@ -184,7 +191,6 @@ function MapViewer() {
 
     // Clear previous graphics and labels
     layer.removeAll();
-    
 
     const [x, y, z] = selectedVertex.coordinate;
 
@@ -209,15 +215,15 @@ function MapViewer() {
             },
             size: 10,
             material: {
-              color:"#974dff",
+              color: "#974dff",
             },
           },
         ],
 
         verticalOffset: {
-          screenLength: 30,
-          maxWorldLength: 3,
-          minWorldLength: 3,
+          screenLength: 20,
+          maxWorldLength: 2,
+          minWorldLength: 2,
         },
 
         callout: {
@@ -232,7 +238,7 @@ function MapViewer() {
     const textPoint = new Point({
       x,
       y,
-      z: (z || 0) + 3.8,
+      z: (z || 0) + 2.8,
       spatialReference: { wkid: 32640 },
     });
 
@@ -251,8 +257,7 @@ function MapViewer() {
             size: 14,
 
             material: {
-              color: "#974dff", /* #282260 */
- 
+              color: "#974dff" /* #282260 */,
             },
 
             halo: {
@@ -290,6 +295,14 @@ function MapViewer() {
     }
 
     setSelectedFeature(null);
+
+    // Remove previous vertex callout and text
+    const vertexLayer = selectedVertexLayerRef.current;
+    if (vertexLayer) {
+      vertexLayer.removeAll();
+    }
+    
+    setSelectedVertex(null);
   };
 
   return (
