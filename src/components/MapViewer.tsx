@@ -41,6 +41,7 @@ function MapViewer() {
   const selectedVertexLayerRef = useRef(null);
   const editVerticesLayerRef = useRef(null);
   const editModeRef = useRef(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
 
   const { state, logout } = useAuth();
   const config = {
@@ -299,6 +300,16 @@ function MapViewer() {
   };
 
   const handleClose = () => {
+    //  ***  DIALOG WILL APPEAR HERE  ***
+
+    if (editModeRef.current) {
+      setShowUnsavedDialog(true);
+      return;
+    }
+
+    closeFeature();
+  };
+  const closeFeature = () => {
     if (selectedGraphicRef.current) {
       selectedGraphicRef.current.symbol =
         selectedGraphicRef.current.attributes.originalSymbol;
@@ -308,7 +319,6 @@ function MapViewer() {
 
     setSelectedFeature(null);
 
-    // Remove previous vertex callout and text
     const vertexLayer = selectedVertexLayerRef.current;
     if (vertexLayer) {
       vertexLayer.removeAll();
@@ -318,7 +328,6 @@ function MapViewer() {
   };
 
   const handleEditModeChange = (editMode) => {
-    console.log(selectedFeature.Size);
     // it get edit mode as ref . it will use on view.onClick to avoid get geometry when user is in editing mode
     editModeRef.current = editMode;
 
@@ -397,6 +406,36 @@ function MapViewer() {
         feature={selectedFeature}
         onClose={handleClose}
       />
+      {showUnsavedDialog && (
+        <calcite-dialog
+          open
+          width="s"
+          heading="Unsaved changes"
+          id="example-dialog"
+          drag-enabled
+          resizable
+          close-disabled
+          kind="brand"
+          placement="center"
+        >
+          <p>Are you sure you want to continue?</p>
+          <p>
+            There are unsaved changes, and if you proceed the changes will be
+            lost.
+          </p>
+          <calcite-button
+            slot="footer-start"
+            appearance="outline"
+            kind="neutral"
+            class="example-dialog-button"
+          >
+            Cancel
+          </calcite-button>
+          <calcite-button slot="footer-end" class="example-dialog-button">
+            Proceed without saving
+          </calcite-button>
+        </calcite-dialog>
+      )}
 
       <button className="close-overlay-btn-logout" onClick={handleLogout}>
         Log out
