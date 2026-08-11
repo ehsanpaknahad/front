@@ -42,7 +42,6 @@ function MapViewer() {
   const editVerticesLayerRef = useRef(null);
   const editModeRef = useRef(false);
 
-
   const { state, logout } = useAuth();
   const config = {
     headers: {
@@ -319,8 +318,8 @@ function MapViewer() {
   };
 
   const handleEditModeChange = (editMode) => {
-
-    // it get edit mode as ref . it will use on view.onClick to avoid get geometry when user is in editing mode 
+    console.log(selectedFeature.Size);
+    // it get edit mode as ref . it will use on view.onClick to avoid get geometry when user is in editing mode
     editModeRef.current = editMode;
 
     // get graphic layer that all vertices will draw on it
@@ -330,7 +329,13 @@ function MapViewer() {
     editLayer?.removeAll();
 
     if (editMode && selectedFeature) {
-      
+      const pipeSizeInch = Number(selectedFeature?.Size);
+
+      // Convert pipe diameter from inches to meters
+      const pipeDiameterMeter = pipeSizeInch ? pipeSizeInch * 0.0254 : 0.2;
+
+      // Make the vertex sphere slightly larger than the pipe diameter
+      const vertexSize = pipeDiameterMeter * 1.5;
 
       selectedFeature.coordinates.forEach((coord, index) => {
         const vertexGraphic = new Graphic({
@@ -346,17 +351,18 @@ function MapViewer() {
 
             symbolLayers: [
               {
-                type: "icon",
+                type: "object",
+
                 resource: {
-                  primitive: "circle",
+                  primitive: "sphere",
                 },
-                size: 28,
+
+                width: vertexSize,
+                height: vertexSize,
+                depth: vertexSize,
+
                 material: {
-                  color: [255, 255, 255, 0],
-                },
-                outline: {
                   color: "#974dff",
-                  size: 2,
                 },
               },
             ],
@@ -368,8 +374,8 @@ function MapViewer() {
     }
 
     if (!editMode) {
-      // remove all vertices when user is not in edit mode 
-       editLayer?.removeAll();
+      // remove all vertices when user is not in edit mode
+      editLayer?.removeAll();
 
       const vertexLayer = selectedVertexLayerRef.current;
 
