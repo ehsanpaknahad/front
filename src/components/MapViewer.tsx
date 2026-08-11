@@ -39,6 +39,9 @@ function MapViewer() {
   const selectedGraphicRef = useRef<any>(null);
   const [selectedVertex, setSelectedVertex] = useState(null);
   const selectedVertexLayerRef = useRef(null);
+  const editVerticesLayerRef = useRef(null);
+  const editModeRef = useRef(false);
+
 
   const { state, logout } = useAuth();
   const config = {
@@ -71,16 +74,25 @@ function MapViewer() {
       },
     });
 
+    // the callout
     const vertexLayer = new GraphicsLayer({
       title: "Selected Vertex",
       elevationInfo: {
         mode: "absolute-height",
       },
     });
-
     selectedVertexLayerRef.current = vertexLayer;
-
     map.add(vertexLayer);
+
+    // all vertices
+    const editVerticesLayer = new GraphicsLayer({
+      title: "Edit Vertices",
+      elevationInfo: {
+        mode: "absolute-height",
+      },
+    });
+    editVerticesLayerRef.current = editVerticesLayer;
+    map.add(editVerticesLayer);
 
     const initialize = async () => {
       const layers = await getLayersList(config);
@@ -142,6 +154,11 @@ function MapViewer() {
     );
 
     view.on("click", async (event) => {
+      // Don't allow selecting another feature while editing
+      if (editModeRef.current) {
+        return;
+      }
+
       const response = await view.hitTest(event);
 
       if (!response.results.length) return;
@@ -168,7 +185,7 @@ function MapViewer() {
         },
         config,
       );
-
+      console.log(result.data);
       setSelectedFeature({
         ...result.data,
         layerName: graphic.attributes.layerName,
@@ -280,10 +297,6 @@ function MapViewer() {
       coordinate,
       index,
     });
-    console.log("Clicked vertex:", coordinate);
-    console.log(selectedVertex);
-
-    // Do whatever you need with SceneView here
   };
 
   const handleClose = () => {
@@ -301,8 +314,71 @@ function MapViewer() {
     if (vertexLayer) {
       vertexLayer.removeAll();
     }
-    
+
     setSelectedVertex(null);
+  };
+
+  const handleEditModeChange = (editMode) => {
+
+    // it get edit mode as ref . it will use on view.onClick to avoid get geometry when user is in editing mode 
+    editModeRef.current = editMode;
+
+    // get graphic layer that all vertices will draw on it
+    const editLayer = editVerticesLayerRef.current;
+
+    // Draw all vertex circles
+    editLayer?.removeAll();
+
+    if (editMode && selectedFeature) {
+      
+
+      selectedFeature.coordinates.forEach((coord, index) => {
+        const vertexGraphic = new Graphic({
+          geometry: new Point({
+            x: coord[0],
+            y: coord[1],
+            z: coord[2] || 0,
+            spatialReference: { wkid: 32640 },
+          }),
+
+          symbol: {
+            type: "point-3d",
+
+            symbolLayers: [
+              {
+                type: "icon",
+                resource: {
+                  primitive: "circle",
+                },
+                size: 28,
+                material: {
+                  color: [255, 255, 255, 0],
+                },
+                outline: {
+                  color: "#974dff",
+                  size: 2,
+                },
+              },
+            ],
+          },
+        });
+
+        editLayer?.add(vertexGraphic);
+      });
+    }
+
+    if (!editMode) {
+      // remove all vertices when user is not in edit mode 
+       editLayer?.removeAll();
+
+      const vertexLayer = selectedVertexLayerRef.current;
+
+      if (vertexLayer) {
+        vertexLayer.removeAll();
+      }
+
+      setSelectedVertex(null);
+    }
   };
 
   return (
@@ -311,6 +387,7 @@ function MapViewer() {
 
       <FeaturePanel
         onVertexClick={handleVertexClick}
+        onEditModeChange={handleEditModeChange}
         feature={selectedFeature}
         onClose={handleClose}
       />

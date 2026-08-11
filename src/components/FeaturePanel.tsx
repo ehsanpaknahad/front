@@ -8,10 +8,13 @@ type Props = {
   onClose: () => void;
 };
 
-function FeaturePanel({ feature,onVertexClick, onClose }: Props) {
+function FeaturePanel({
+  feature,
+  onVertexClick,
+  onEditModeChange,
+  onClose,
+}: Props) {
   if (!feature) return null;
-
-
 
   return (
     <div className="feature-panel">
@@ -29,16 +32,18 @@ function FeaturePanel({ feature,onVertexClick, onClose }: Props) {
 
         <calcite-accordion>
           <calcite-accordion-item heading="Attributes" icon-start="table">
-           
             <div className="accordion-content">
               <AttributeTable feature={feature} />
             </div>
           </calcite-accordion-item>
 
           <calcite-accordion-item icon-start="vertex-edit" heading="Geometry">
-            
             <div className="accordion-content">
-              <GeometryTable coordinates={feature.coordinates}  onVertexClick={onVertexClick}/>
+              <GeometryTable
+                coordinates={feature.coordinates}
+                onVertexClick={onVertexClick}
+                onEditModeChange={onEditModeChange}
+              />
             </div>
           </calcite-accordion-item>
         </calcite-accordion>
