@@ -1,27 +1,45 @@
 import "@arcgis/core/assets/esri/themes/light/main.css";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 
-function GeometryTable({ coordinates, onVertexClick, onEditModeChange, }) {
+function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
   const [isEditMode, setIsEditMode] = useState(false);
+  const [editedCoordinates, setEditedCoordinates] = useState(coordinates);
+
   const handleEditClick = () => {
     setIsEditMode(true);
     // Optionally: reset selection when entering edit mode
     // setSelectedVertex(null);
-     onEditModeChange(true);
+    onEditModeChange(true);
   };
   const handleSaveClick = () => {
     // Perform save logic with selectedVertex
 
     setIsEditMode(false);
     //setSelectedVertex(null);
-     onEditModeChange(false);
+    onEditModeChange(false);
   };
 
   const handleUndoClick = () => {
     setIsEditMode(false);
     // setSelectedVertex(null);
-     onEditModeChange(false);
+    onEditModeChange(false);
   };
+
+  const handleCoordinateChange = (rowIndex, coordinateIndex, value) => {
+    setEditedCoordinates((prev) => {
+      const updated = [...prev];
+
+      updated[rowIndex] = [...updated[rowIndex]];
+
+      updated[rowIndex][coordinateIndex] = Number(value);
+
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+  setEditedCoordinates(coordinates);
+}, [coordinates]);
 
   return (
     <div className="geometry-table-container">
@@ -69,13 +87,13 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange, }) {
           selection-mode={isEditMode ? "single" : "none"}
           oncalciteTableSelect={(event) => {
             const selectedRow = event.target.selectedItems[0];
-               console.log(selectedRow)
-                console.log(event.target.selectedItems)
+            console.log(selectedRow);
+            console.log(event.target.selectedItems);
             if (!selectedRow) return;
 
             const index = Number(selectedRow.dataset.index);
- 
-            onVertexClick(coordinates[index],index)
+
+            onVertexClick(coordinates[index], index);
           }}
         >
           <calcite-table-row slot="table-header">
@@ -86,10 +104,44 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange, }) {
 
           {coordinates.map((coord, index) => (
             <calcite-table-row key={index} data-index={index}>
-              <calcite-table-cell>{coord[0].toFixed(3)}</calcite-table-cell>
-              <calcite-table-cell>{coord[1].toFixed(3)}</calcite-table-cell>
               <calcite-table-cell>
-                {coord[2]?.toFixed(3) ?? "0.000"}
+                {isEditMode ? (
+                  <calcite-input
+                    type="number"
+                    value={editedCoordinates[index][0]}
+                    onInput={(event) =>
+                      handleCoordinateChange(index, 0, event.target.value)
+                    }
+                  />
+                ) : (
+                  coord[0].toFixed(3)
+                )}
+              </calcite-table-cell>
+              <calcite-table-cell>
+                {isEditMode ? (
+                  <calcite-input
+                    type="number"
+                    value={editedCoordinates[index][1]}
+                    onInput={(event) =>
+                      handleCoordinateChange(index, 1, event.target.value)
+                    }
+                  />
+                ) : (
+                  coord[1].toFixed(3)
+                )}
+              </calcite-table-cell>
+              <calcite-table-cell>
+                {isEditMode ? (
+                  <calcite-input
+                    type="number"
+                    value={editedCoordinates[index][2] ?? 0}
+                    onInput={(event) =>
+                      handleCoordinateChange(index, 2, event.target.value)
+                    }
+                  />
+                ) : (
+                  (coord[2]?.toFixed(3) ?? "0.000")
+                )}
               </calcite-table-cell>
             </calcite-table-row>
           ))}
