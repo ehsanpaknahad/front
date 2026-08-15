@@ -395,6 +395,23 @@ function MapViewer() {
       setSelectedVertex(null);
     }
   };
+  const handleSaveCoordinates = async (coordinates) => {
+    try {
+      await axios.post(
+        "/api/update-geometry",
+        {
+          layerName: selectedFeature.layerName,
+          id: selectedFeature.id,
+          coordinates: coordinates,
+        },
+        config,
+      );
+
+      console.log("Geometry saved successfully");
+    } catch (error) {
+      console.error("Failed to save geometry:", error);
+    }
+  };
 
   return (
     <div className="map-container">
@@ -403,6 +420,7 @@ function MapViewer() {
       <FeaturePanel
         onVertexClick={handleVertexClick}
         onEditModeChange={handleEditModeChange}
+        onSave={handleSaveCoordinates}
         feature={selectedFeature}
         onClose={handleClose}
       />

@@ -1,7 +1,12 @@
 import "@arcgis/core/assets/esri/themes/light/main.css";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 
-function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
+function GeometryTable({
+  coordinates,
+  onVertexClick,
+  onEditModeChange,
+  onSave,
+}) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedCoordinates, setEditedCoordinates] = useState(coordinates);
 
@@ -11,12 +16,16 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
     // setSelectedVertex(null);
     onEditModeChange(true);
   };
-  const handleSaveClick = () => {
-    // Perform save logic with selectedVertex
+  const handleSaveClick = async () => {
+    try {
+      console.log(editedCoordinates)
+      await onSave(editedCoordinates);
 
-    setIsEditMode(false);
-    //setSelectedVertex(null);
-    onEditModeChange(false);
+      setIsEditMode(false);
+      onEditModeChange(false);
+    } catch (error) {
+      console.error("Save failed:", error);
+    }
   };
 
   const handleUndoClick = () => {
@@ -38,8 +47,8 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
   };
 
   useEffect(() => {
-  setEditedCoordinates(coordinates);
-}, [coordinates]);
+    setEditedCoordinates(coordinates);
+  }, [coordinates]);
 
   return (
     <div className="geometry-table-container">
@@ -79,16 +88,13 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
           bordered
           current-page="0"
           interaction-mode="interactive"
-          layout="auto"
-          numbered
           page-size="0"
           scale="s"
           striped
           selection-mode={isEditMode ? "single" : "none"}
           oncalciteTableSelect={(event) => {
             const selectedRow = event.target.selectedItems[0];
-            console.log(selectedRow);
-            console.log(event.target.selectedItems);
+
             if (!selectedRow) return;
 
             const index = Number(selectedRow.dataset.index);
@@ -107,11 +113,13 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
               <calcite-table-cell>
                 {isEditMode ? (
                   <calcite-input
-                    type="number"
-                    value={editedCoordinates[index][0]}
+                    className="coordinate-input"
+                    type="text"
+                    value={String(editedCoordinates[index][0])}
                     onInput={(event) =>
                       handleCoordinateChange(index, 0, event.target.value)
                     }
+                    scale="s"
                   />
                 ) : (
                   coord[0].toFixed(3)
@@ -120,11 +128,13 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
               <calcite-table-cell>
                 {isEditMode ? (
                   <calcite-input
-                    type="number"
-                    value={editedCoordinates[index][1]}
+                    className="coordinate-input"
+                    type="text"
+                    value={String(editedCoordinates[index][1])}
                     onInput={(event) =>
                       handleCoordinateChange(index, 1, event.target.value)
                     }
+                    scale="s"
                   />
                 ) : (
                   coord[1].toFixed(3)
@@ -133,11 +143,13 @@ function GeometryTable({ coordinates, onVertexClick, onEditModeChange }) {
               <calcite-table-cell>
                 {isEditMode ? (
                   <calcite-input
-                    type="number"
-                    value={editedCoordinates[index][2] ?? 0}
+                    className="coordinate-input"
+                    type="text"
+                    value={String(editedCoordinates[index][2] ?? 0)}
                     onInput={(event) =>
                       handleCoordinateChange(index, 2, event.target.value)
                     }
+                    scale="s"
                   />
                 ) : (
                   (coord[2]?.toFixed(3) ?? "0.000")

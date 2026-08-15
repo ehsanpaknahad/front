@@ -9,9 +9,10 @@ type Props = {
 };
 
 function FeaturePanel({
-  feature,
   onVertexClick,
   onEditModeChange,
+  onSave,
+  feature,
   onClose,
 }: Props) {
   if (!feature) return null;
@@ -43,6 +44,7 @@ function FeaturePanel({
                 coordinates={feature.coordinates}
                 onVertexClick={onVertexClick}
                 onEditModeChange={onEditModeChange}
+                onSave={onSave}
               />
             </div>
           </calcite-accordion-item>

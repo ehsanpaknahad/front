@@ -1,5 +1,5 @@
 /* src/index.css or src/App.css */
-@import "/assets/esri/themes/light/main.css";
+/* @import "/assets/esri/themes/light/main.css"; */
 
 * {
   margin: 0;
@@ -236,6 +236,16 @@ form {
   color: #888;
   opacity: 0.7;
 }
+.coordinate-input {
+  --calcite-color-border-input: transparent;
+  --calcite-color-foreground-1: transparent;
+  --calcite-color-background: transparent;
+  
+ 
+ 
+}
+ 
+
 
 .btn {
   width: 100%;
