@@ -185,7 +185,7 @@ function MapViewer() {
         },
         config,
       );
-      console.log(result.data);
+      console.log("selected:" ,result.data);
       setSelectedFeature({
         ...result.data,
         layerName: graphic.attributes.layerName,
@@ -402,6 +402,7 @@ function MapViewer() {
         {
           layerName: selectedFeature.layerName,
           id: selectedFeature.id,
+          geometryType: selectedFeature.geometryType,
           coordinates: coordinates,
         },
         config,
