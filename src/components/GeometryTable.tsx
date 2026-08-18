@@ -1,12 +1,20 @@
 import "@arcgis/core/assets/esri/themes/light/main.css";
 import { useState, useEffect } from "react";
+type Props = {
+  coordinates: any[];
+  onVertexClick: (coordinate: any, index: number) => void;
+  onEditModeChange: (editMode: boolean) => void;
+  onCoordinatesChange: (coordinates: any[]) => void;
+  onSave: (coordinates: any[]) => void;
+};
 
 function GeometryTable({
   coordinates,
   onVertexClick,
   onEditModeChange,
+  onCoordinatesChange,
   onSave,
-}) {
+}: Props) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedCoordinates, setEditedCoordinates] = useState(coordinates);
 
@@ -16,16 +24,11 @@ function GeometryTable({
     // setSelectedVertex(null);
     onEditModeChange(true);
   };
-  const handleSaveClick = async () => {
-    try {
-      console.log(editedCoordinates)
-      await onSave(editedCoordinates);
+  const handleSaveClick = () => {
+    onSave(editedCoordinates);
 
-      setIsEditMode(false);
-      onEditModeChange(false);
-    } catch (error) {
-      console.error("Save failed:", error);
-    }
+    setIsEditMode(false);
+    onEditModeChange(false);
   };
 
   const handleUndoClick = () => {
@@ -41,6 +44,9 @@ function GeometryTable({
       updated[rowIndex] = [...updated[rowIndex]];
 
       updated[rowIndex][coordinateIndex] = Number(value);
+
+      // Tell MapViewer immediately
+      onCoordinatesChange(updated);
 
       return updated;
     });
@@ -99,7 +105,7 @@ function GeometryTable({
 
             const index = Number(selectedRow.dataset.index);
 
-            onVertexClick(coordinates[index], index);
+            onVertexClick(editedCoordinates[index], index);
           }}
         >
           <calcite-table-row slot="table-header">

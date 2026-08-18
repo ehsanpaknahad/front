@@ -14,9 +14,10 @@ import highlightGraphic from "../map/HighlightGraphic.js";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 import type { LayerInfo } from "../types/interface.js";
-
+import Polyline from "@arcgis/core/geometry/Polyline.js";
 import Graphic from "@arcgis/core/Graphic.js";
 import Point from "@arcgis/core/geometry/Point.js";
+import Polygon from "@arcgis/core/geometry/Polygon.js";
 
 export interface LayerManagerItem {
   graphicsLayer: GraphicsLayer;
@@ -173,7 +174,7 @@ function MapViewer() {
       }
 
       setSelectedVertex(null);
-
+      console.log("graphiiic:", graphic);
       // Highlight the newly selected feature
       highlightGraphic(graphic, selectedGraphicRef);
 
@@ -185,7 +186,7 @@ function MapViewer() {
         },
         config,
       );
-      console.log("selected:" ,result.data);
+      console.log("selected:", result.data);
       setSelectedFeature({
         ...result.data,
         layerName: graphic.attributes.layerName,
@@ -395,6 +396,90 @@ function MapViewer() {
       setSelectedVertex(null);
     }
   };
+
+  // NEW: Update only the already-rendered feature after a successful save
+  const updateRenderedGraphic = (
+    layerName: string,
+    id: string | number,
+    geometryType: string,
+    coordinates: any[],
+  ) => {
+    const layerInfo = layerManagerRef.current[layerName];
+
+    if (!layerInfo) {
+      console.warn(`Layer "${layerName}" not found`);
+      return;
+    }
+
+    // Find the already-rendered Graphic
+    const graphic = layerInfo.graphicsMap.get(String(id));
+
+    if (!graphic) {
+      console.warn(`Graphic with id "${id}" is not currently rendered`);
+      return;
+    }
+
+    // Create the new geometry
+    let newGeometry;
+
+    if (geometryType === "POINT") {
+      const [x, y, z] = coordinates[0];
+
+      newGeometry = new Point({
+        x,
+        y,
+        z: z ?? 0,
+        spatialReference: { wkid: 32640 },
+      });
+    }
+
+    // LINESTRING
+    else if (geometryType === "LINESTRING") {
+      newGeometry = new Polyline({
+        paths: coordinates,
+        spatialReference: { wkid: 32640 },
+      });
+    }
+
+    // MULTILINESTRING
+    else if (geometryType === "MULTILINESTRING") {
+      newGeometry = new Polyline({
+        paths: coordinates,
+        spatialReference: { wkid: 32640 },
+      });
+    }
+
+    // POLYGON
+    else if (geometryType === "POLYGON") {
+      console.log("geometryType:", geometryType);
+      console.log("coordinates:", coordinates);
+      console.log("newGeometry:", newGeometry);
+      console.log("isEmpty:", newGeometry?.isEmpty);
+      console.log("extent:", newGeometry?.extent);
+
+      newGeometry = new Polygon({
+        rings: coordinates,
+        spatialReference: { wkid: 32640 },
+      });
+
+      console.log("POLYGON rings:", coordinates);
+    }
+
+    // MULTIPOLYGON
+    else if (geometryType === "MULTIPOLYGON") {
+      newGeometry = new Polygon({
+        rings: [coordinates],
+        spatialReference: { wkid: 32640 },
+      });
+    } else {
+      console.warn(`Unsupported geometry type: ${geometryType}`);
+      return;
+    }
+
+    // IMPORTANT: only this Graphic is updated
+    graphic.geometry = newGeometry;
+  };
+
   const handleSaveCoordinates = async (coordinates) => {
     try {
       await axios.post(
@@ -408,10 +493,49 @@ function MapViewer() {
         config,
       );
 
+      // NEW:
+      // Server successfully saved the geometry.
+      // Now update only the existing Graphic on the map.
+      updateRenderedGraphic(
+        selectedFeature.layerName,
+        selectedFeature.id,
+        selectedFeature.geometryType,
+        coordinates,
+      );
+      // IMPORTANT:
+      // Update React state so GeometryTable receives the new coordinates
+      setSelectedFeature((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          coordinates: coordinates,
+        };
+      });
+
       console.log("Geometry saved successfully");
     } catch (error) {
       console.error("Failed to save geometry:", error);
     }
+  };
+
+  const handleCoordinatesChange = (coordinates) => {
+    const editLayer = editVerticesLayerRef.current;
+
+    if (!editLayer) return;
+
+    coordinates.forEach((coord, index) => {
+      const graphic = editLayer.graphics.getItemAt(index);
+
+      if (!graphic) return;
+
+      graphic.geometry = new Point({
+        x: coord[0],
+        y: coord[1],
+        z: coord[2] || 0,
+        spatialReference: { wkid: 32640 },
+      });
+    });
   };
 
   return (
@@ -421,6 +545,7 @@ function MapViewer() {
       <FeaturePanel
         onVertexClick={handleVertexClick}
         onEditModeChange={handleEditModeChange}
+        onCoordinatesChange={handleCoordinatesChange}
         onSave={handleSaveCoordinates}
         feature={selectedFeature}
         onClose={handleClose}

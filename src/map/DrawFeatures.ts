@@ -18,7 +18,7 @@ const drawFeatures = (
     features.map(feature => feature.id)
   );
 
-  
+  // Remove features that are no longer in the current extent
   graphicsMap.forEach((graphic, id) => {
     if (!newIds.has(id)) {
       graphicsLayer.remove(graphic);
@@ -40,7 +40,7 @@ const drawFeatures = (
 
     graphics.push(graphic);
 
-    graphicsMap.set(feature.id, graphic);
+    graphicsMap.set(String(feature.id), graphic);
 
   }
 

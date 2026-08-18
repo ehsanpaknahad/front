@@ -11,6 +11,7 @@ type Props = {
 function FeaturePanel({
   onVertexClick,
   onEditModeChange,
+  onCoordinatesChange,
   onSave,
   feature,
   onClose,
@@ -44,6 +45,7 @@ function FeaturePanel({
                 coordinates={feature.coordinates}
                 onVertexClick={onVertexClick}
                 onEditModeChange={onEditModeChange}
+                onCoordinatesChange={onCoordinatesChange}
                 onSave={onSave}
               />
             </div>
