@@ -345,7 +345,7 @@ function MapViewer() {
       const pipeDiameterMeter = pipeSizeInch ? pipeSizeInch * 0.0254 : 0.2;
 
       // Make the vertex sphere slightly larger than the pipe diameter
-      const vertexSize = pipeDiameterMeter * 1.5;
+      const vertexSize = pipeDiameterMeter * 1.3;
 
       selectedFeature.coordinates.forEach((coord, index) => {
         const vertexGraphic = new Graphic({
@@ -523,6 +523,15 @@ function MapViewer() {
     const editLayer = editVerticesLayerRef.current;
 
     if (!editLayer) return;
+
+    if (!selectedFeature) return;
+
+    updateRenderedGraphic(
+      selectedFeature.layerName,
+      selectedFeature.id,
+      selectedFeature.geometryType,
+      coordinates,
+    );
 
     coordinates.forEach((coord, index) => {
       const graphic = editLayer.graphics.getItemAt(index);
