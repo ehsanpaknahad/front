@@ -3,9 +3,21 @@ import Graphic from "@arcgis/core/Graphic";
 function highlightGraphic(graphic: Graphic, selectedGraphicRef: any) {
   // Restore previous selection
   if (selectedGraphicRef.current) {
-    selectedGraphicRef.current.symbol =
-      selectedGraphicRef.current.attributes.originalSymbol;
+    const previousGraphic = selectedGraphicRef.current;
+
+    if (previousGraphic.attributes?.originalSymbol) {
+      previousGraphic.symbol =
+        previousGraphic.attributes.originalSymbol;
+    }
   }
+
+  // Save the original symbol of the new graphic
+  if (!graphic.attributes) {
+    graphic.attributes = {};
+  }
+
+  graphic.attributes.originalSymbol =
+    graphic.symbol.clone();
 
   // Save newly selected graphic
   selectedGraphicRef.current = graphic;

@@ -38,6 +38,10 @@ function MapViewer() {
   const [selectedFeature, setSelectedFeature] = useState(null);
   const layerManagerRef = useRef<LayerManager>({});
   const selectedGraphicRef = useRef<any>(null);
+  const selectedFeatureRef = useRef<{
+    layerName: string;
+    id: string | number;
+  } | null>(null);
   const [selectedVertex, setSelectedVertex] = useState(null);
   const selectedVertexLayerRef = useRef(null);
   const editVerticesLayerRef = useRef(null);
@@ -131,6 +135,19 @@ function MapViewer() {
         }
 
         drawFeatures(layerName, features, layerManagerRef);
+
+        // Re-apply selection after the layer has been redrawn
+        const selected = selectedFeatureRef.current;
+
+        if (selected && selected.layerName === layerName) {
+          const layerInfo = layerManagerRef.current[layerName];
+
+          const newGraphic = layerInfo?.graphicsMap.get(String(selected.id));
+
+          if (newGraphic) {
+            highlightGraphic(newGraphic, selectedGraphicRef);
+          }
+        }
       });
     }, 1500);
 
@@ -174,7 +191,13 @@ function MapViewer() {
       }
 
       setSelectedVertex(null);
-      console.log("graphiiic:", graphic);
+
+      // Remember which feature is selected
+      selectedFeatureRef.current = {
+        layerName: graphic.attributes.layerName,
+        id: graphic.attributes.id,
+      };
+
       // Highlight the newly selected feature
       highlightGraphic(graphic, selectedGraphicRef);
 
@@ -317,6 +340,9 @@ function MapViewer() {
 
       selectedGraphicRef.current = null;
     }
+
+    // Clear persistent selection
+    selectedFeatureRef.current = null;
 
     setSelectedFeature(null);
 
