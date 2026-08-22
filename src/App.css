@@ -43,8 +43,8 @@ input {
   --calcite-color-focus: #b580ff;
 
   --calcite-color-info: rgb(151, 77, 255);
- --calcite-color-brand-hover:#8040cc;
- --calcite-color-brand-press:#8040cc;
+  --calcite-color-brand-hover: #8040cc;
+  --calcite-color-brand-press: #8040cc;
   /* Background */
   /* --calcite-color-background:#fafafa;
   --calcite-color-foreground-1:white;
@@ -67,25 +67,38 @@ input {
   padding-inline-end: 0px;
   justify-content: flex-end;
 }
+.right-calcite-toolbar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+}
+
+.calcite-tool-panel {
+  position: absolute;
+  top: 20px;
+  right: 90px;
+  width: 320px;
+  height: 500px;
+  z-index: 19;
+}
 
 .body-part {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(105deg, #fff, #e7dbf8);    
+  background: linear-gradient(105deg, #fff, #e7dbf8);
 }
 .geometry-table-container {
   display: flex;
   flex-direction: column;
- 
 }
 .geometry-table-toolbar {
   display: flex;
   gap: 6px;
   padding: 4px;
   padding-bottom: 8px;
-  
 
   position: sticky;
   top: 0;
@@ -93,7 +106,6 @@ input {
 
   background: var(--calcite-color-foreground-1);
 }
-
 
 .container {
   position: relative;
@@ -241,12 +253,7 @@ form {
   --calcite-color-border-input: transparent;
   --calcite-color-foreground-1: transparent;
   --calcite-color-background: transparent;
-  
- 
- 
 }
- 
-
 
 .btn {
   width: 100%;
@@ -260,7 +267,7 @@ form {
   font-size: 16px;
   color: #fff;
   font-weight: 600;
-  background: linear-gradient(90deg, #b580ff,#8040cc);
+  background: linear-gradient(90deg, #b580ff, #8040cc);
   transition: 0.3s ease;
 }
 
@@ -370,23 +377,7 @@ form {
   left: 50%; /* move left edge to center */
   transform: translateX(-50%); /* shift left by half width */
 }
-
-.close-overlay-btn-logout {
-  /* background: linear-gradient(90deg, #ff8d21, #ffab4d);
-  color: white;
-  border: none;
-  padding: 5px 25px;
-  border-radius: 28px; */
-  font-size: 14px;
-  cursor: pointer;
-
-  transition: 0.3s;
-
-  position: absolute;
-  top: 10px;
-
-  right: 10px;
-}
+  
 
 .close-overlay-btn:hover {
   box-shadow: 0 6px 14px rgba(255, 141, 33, 0.4);
@@ -426,8 +417,8 @@ form {
 
 .feature-panel {
   position: absolute;
-  top: 60px;
-  right: 15px;
+  top: 17px;
+  left: 80px;
   width: 380px;
 
   z-index: 100;

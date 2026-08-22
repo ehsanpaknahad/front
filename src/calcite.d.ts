@@ -1,4 +1,4 @@
- import type * as React from "react";
+import type * as React from "react";
 
 declare module "react" {
   namespace JSX {
@@ -71,8 +71,8 @@ declare module "react" {
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
-      
-       "calcite-button": React.DetailedHTMLProps<
+
+      "calcite-button": React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
@@ -81,6 +81,23 @@ declare module "react" {
         HTMLElement
       >;
       "calcite-input": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      >;
+      "calcite-shell": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      >;
+      "calcite-action-bar": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      >;
+      "calcite-shell-panel": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      >;
+
+      "calcite-action-group": React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;

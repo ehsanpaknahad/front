@@ -36,6 +36,7 @@ export interface LayerManager {
 function MapViewer() {
   const mapRef = useRef(null);
   const [selectedFeature, setSelectedFeature] = useState(null);
+  const [activeTool, setActiveTool] = useState<string | null>(null);
   const layerManagerRef = useRef<LayerManager>({});
   const selectedGraphicRef = useRef<any>(null);
   const selectedFeatureRef = useRef<{
@@ -68,6 +69,7 @@ function MapViewer() {
       container: mapRef.current,
       spatialReference: { wkid: 32640 },
       map,
+
       camera: {
         position: {
           x: 54.537, // longitude
@@ -573,9 +575,111 @@ function MapViewer() {
     });
   };
 
+  const handleActionClick = (tool: string) => {
+    setActiveTool((current) => (current === tool ? null : tool));
+  };
+
   return (
-    <div className="map-container">
+    <calcite-shell>
+      {/* ===================================================== */}
+      {/* MAIN MAP                                              */}
+      {/* ===================================================== */}
+
       <div ref={mapRef} className="map-view" />
+
+      {/* ===================================================== */}
+      {/* RIGHT SIDE SHELL PANEL                                */}
+      {/* ===================================================== */}
+
+      <calcite-shell-panel
+        
+        slot="panel-end"
+        position="end"
+        display-mode="float"
+        collapsed={!activeTool}
+      >
+        {/* VERTICAL ACTION BAR                                 */}
+
+        <calcite-action-bar slot="action-bar">
+          <calcite-action-group label="Data tools">
+            <calcite-action
+              text="Layer"
+              icon="sliders-horizontal"
+              text-enabled
+              active={activeTool === "layer"}
+              onClick={() => handleActionClick("layer")}
+            />
+
+            <calcite-action
+              text="Styles"
+              icon="shapes"
+              text-enabled
+              active={activeTool === "styles"}
+              onClick={() => handleActionClick("styles")}
+            />
+
+            <calcite-action
+              text="Filter"
+              icon="layer-filter"
+              text-enabled
+              active={activeTool === "filter"}
+              onClick={() => handleActionClick("filter")}
+            />
+
+            <calcite-action
+              text="Configure"
+              icon="popup"
+              text-enabled
+              active={activeTool === "configure"}
+              onClick={() => handleActionClick("configure")}
+            />
+          </calcite-action-group>
+
+          <calcite-action
+            slot="bottom-actions"
+            text="Log out"
+            icon="sign-out"
+            text-enabled
+            onClick={handleLogout}
+          />
+        </calcite-action-bar>
+
+        {/* LAYER PANEL                                         */}
+
+        {activeTool === "layer" && (
+          <calcite-panel heading="Layers">
+            <p>Layer content will go here.</p>
+          </calcite-panel>
+        )}
+
+        {/* STYLES PANEL                                        */}
+
+        {activeTool === "styles" && (
+          <calcite-panel heading="Styles">
+            <p>Style options will go here.</p>
+          </calcite-panel>
+        )}
+
+        {/* FILTER PANEL                                        */}
+
+        {activeTool === "filter" && (
+          <calcite-panel heading="Filter">
+            <p>Filter options will go here.</p>
+          </calcite-panel>
+        )}
+
+        {/* CONFIGURE PANEL                                     */}
+
+        {activeTool === "configure" && (
+          <calcite-panel heading="Configure">
+            <p>Configuration options will go here.</p>
+          </calcite-panel>
+        )}
+      </calcite-shell-panel>
+
+      {/* ===================================================== */}
+      {/* YOUR EXISTING FEATURE PANEL                           */}
+      {/* ===================================================== */}
 
       <FeaturePanel
         onVertexClick={handleVertexClick}
@@ -585,6 +689,11 @@ function MapViewer() {
         feature={selectedFeature}
         onClose={handleClose}
       />
+
+      {/* ===================================================== */}
+      {/* UNSAVED CHANGES DIALOG                                */}
+      {/* ===================================================== */}
+
       {showUnsavedDialog && (
         <calcite-dialog
           open
@@ -598,10 +707,12 @@ function MapViewer() {
           placement="center"
         >
           <p>Are you sure you want to continue?</p>
+
           <p>
             There are unsaved changes, and if you proceed the changes will be
             lost.
           </p>
+
           <calcite-button
             slot="footer-start"
             appearance="outline"
@@ -610,16 +721,13 @@ function MapViewer() {
           >
             Cancel
           </calcite-button>
+
           <calcite-button slot="footer-end" class="example-dialog-button">
             Proceed without saving
           </calcite-button>
         </calcite-dialog>
       )}
-
-      <calcite-button className="close-overlay-btn-logout" onClick={handleLogout}>
-        Log out
-      </calcite-button>
-    </div>
+    </calcite-shell>
   );
 }
 

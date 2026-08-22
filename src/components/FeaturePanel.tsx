@@ -17,12 +17,13 @@ function FeaturePanel({
   onClose,
 }: Props) {
   if (!feature) return null;
-
+//
   return (
     <div className="feature-panel">
       <calcite-panel
         heading={feature.layerName}
         description={`Feature ID: ${feature.id}`}
+         
       >
         {/* Close button */}
         <calcite-action
