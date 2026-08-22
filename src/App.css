@@ -40,10 +40,11 @@ input {
 
 :root {
   --calcite-color-brand: #974dff; /* #282260 */
-  --calcite-color-focus: rgb(181, 128, 255);
+  --calcite-color-focus: #b580ff;
 
   --calcite-color-info: rgb(151, 77, 255);
-
+ --calcite-color-brand-hover:#8040cc;
+ --calcite-color-brand-press:#8040cc;
   /* Background */
   /* --calcite-color-background:#fafafa;
   --calcite-color-foreground-1:white;
@@ -72,7 +73,7 @@ input {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(105deg, #fff, #ffe4c8);
+  background: linear-gradient(105deg, #fff, #e7dbf8);    
 }
 .geometry-table-container {
   display: flex;
@@ -259,7 +260,7 @@ form {
   font-size: 16px;
   color: #fff;
   font-weight: 600;
-  background: linear-gradient(90deg, #ff8d21, #ffab4d);
+  background: linear-gradient(90deg, #b580ff,#8040cc);
   transition: 0.3s ease;
 }
 
@@ -371,11 +372,11 @@ form {
 }
 
 .close-overlay-btn-logout {
-  background: linear-gradient(90deg, #ff8d21, #ffab4d);
+  /* background: linear-gradient(90deg, #ff8d21, #ffab4d);
   color: white;
   border: none;
   padding: 5px 25px;
-  border-radius: 28px;
+  border-radius: 28px; */
   font-size: 14px;
   cursor: pointer;
 

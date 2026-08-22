@@ -616,9 +616,9 @@ function MapViewer() {
         </calcite-dialog>
       )}
 
-      <button className="close-overlay-btn-logout" onClick={handleLogout}>
+      <calcite-button className="close-overlay-btn-logout" onClick={handleLogout}>
         Log out
-      </button>
+      </calcite-button>
     </div>
   );
 }
