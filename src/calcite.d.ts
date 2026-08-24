@@ -101,6 +101,10 @@ declare module "react" {
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
       >;
+      // "arcgis-layer-list": React.DetailedHTMLProps<
+      //   React.HTMLAttributes<HTMLElement>,
+      //   HTMLElement
+      // >;
     }
   }
 }

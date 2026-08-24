@@ -5,10 +5,10 @@ import App from "./App.tsx";
 import "@fontsource/poppins"; // Defaults to 400 weight
 import { AuthProvider } from "./auth/AuthProvider.js";
 
-//  import "@esri/calcite-components/dist/calcite/calcite.css";
-// import { defineCustomElements } from "@esri/calcite-components/dist/loader";
+ 
 
-// defineCustomElements(window);
+import "@arcgis/map-components/components/arcgis-layer-list";
+ 
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
 import "./index.css";
@@ -16,6 +16,8 @@ import "./index.css";
 defineCustomElements(window, {
   resourcesUrl: "/assets",
 });
+
+
 
 // CRITICAL: Set this BEFORE importing any ArcGIS widgets
 esriConfig.assetsPath = "/assets"; // Points to public/assets folder

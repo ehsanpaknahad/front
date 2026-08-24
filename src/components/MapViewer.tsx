@@ -4,6 +4,7 @@ import SceneView from "@arcgis/core/views/SceneView.js";
 import debounce from "lodash/debounce";
 import axios from "axios";
 import FeaturePanel from "./FeaturePanel.js";
+  
 
 import drawFeatures from "../map/DrawFeatures.js";
 import { useAuth } from "../auth/AuthProvider.js";
@@ -18,6 +19,8 @@ import Polyline from "@arcgis/core/geometry/Polyline.js";
 import Graphic from "@arcgis/core/Graphic.js";
 import Point from "@arcgis/core/geometry/Point.js";
 import Polygon from "@arcgis/core/geometry/Polygon.js";
+
+ 
 
 export interface LayerManagerItem {
   graphicsLayer: GraphicsLayer;
@@ -48,6 +51,9 @@ function MapViewer() {
   const editVerticesLayerRef = useRef(null);
   const editModeRef = useRef(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+
+  const viewRef = useRef<SceneView | null>(null);
+  const layerListRef = useRef(null);
 
   const { state, logout } = useAuth();
   const config = {
@@ -80,6 +86,8 @@ function MapViewer() {
         tilt: 40,
       },
     });
+
+    viewRef.current = view;
 
     // the callout
     const vertexLayer = new GraphicsLayer({
@@ -318,6 +326,12 @@ function MapViewer() {
     layer.addMany([graphic, textGraphic]);
   }, [selectedVertex]);
 
+  useEffect(() => {
+    if (activeTool === "layer" && layerListRef.current && viewRef.current) {
+      layerListRef.current.view = viewRef.current;
+    }
+  }, [activeTool]);
+
   const handleVertexClick = (coordinate, index) => {
     setSelectedVertex({
       coordinate,
@@ -479,18 +493,10 @@ function MapViewer() {
 
     // POLYGON
     else if (geometryType === "POLYGON") {
-      console.log("geometryType:", geometryType);
-      console.log("coordinates:", coordinates);
-      console.log("newGeometry:", newGeometry);
-      console.log("isEmpty:", newGeometry?.isEmpty);
-      console.log("extent:", newGeometry?.extent);
-
       newGeometry = new Polygon({
         rings: coordinates,
         spatialReference: { wkid: 32640 },
       });
-
-      console.log("POLYGON rings:", coordinates);
     }
 
     // MULTIPOLYGON
@@ -580,7 +586,7 @@ function MapViewer() {
   };
 
   return (
-    <calcite-shell>
+    <calcite-shell content-behind>
       {/* ===================================================== */}
       {/* MAIN MAP                                              */}
       {/* ===================================================== */}
@@ -592,10 +598,9 @@ function MapViewer() {
       {/* ===================================================== */}
 
       <calcite-shell-panel
-        
         slot="panel-end"
         position="end"
-        display-mode="float"
+        display-mode="float-content"
         collapsed={!activeTool}
       >
         {/* VERTICAL ACTION BAR                                 */}
@@ -644,15 +649,11 @@ function MapViewer() {
           />
         </calcite-action-bar>
 
-        {/* LAYER PANEL                                         */}
-
         {activeTool === "layer" && (
           <calcite-panel heading="Layers">
-            <p>Layer content will go here.</p>
+            <arcgis-layer-list ref={layerListRef} />
           </calcite-panel>
         )}
-
-        {/* STYLES PANEL                                        */}
 
         {activeTool === "styles" && (
           <calcite-panel heading="Styles">
@@ -660,15 +661,11 @@ function MapViewer() {
           </calcite-panel>
         )}
 
-        {/* FILTER PANEL                                        */}
-
         {activeTool === "filter" && (
           <calcite-panel heading="Filter">
             <p>Filter options will go here.</p>
           </calcite-panel>
         )}
-
-        {/* CONFIGURE PANEL                                     */}
 
         {activeTool === "configure" && (
           <calcite-panel heading="Configure">
