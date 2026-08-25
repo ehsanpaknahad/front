@@ -4,7 +4,6 @@ import SceneView from "@arcgis/core/views/SceneView.js";
 import debounce from "lodash/debounce";
 import axios from "axios";
 import FeaturePanel from "./FeaturePanel.js";
-  
 
 import drawFeatures from "../map/DrawFeatures.js";
 import { useAuth } from "../auth/AuthProvider.js";
@@ -20,7 +19,7 @@ import Graphic from "@arcgis/core/Graphic.js";
 import Point from "@arcgis/core/geometry/Point.js";
 import Polygon from "@arcgis/core/geometry/Polygon.js";
 
- 
+import GroupLayer from "@arcgis/core/layers/GroupLayer.js";
 
 export interface LayerManagerItem {
   graphicsLayer: GraphicsLayer;
@@ -92,6 +91,7 @@ function MapViewer() {
     // the callout
     const vertexLayer = new GraphicsLayer({
       title: "Selected Vertex",
+      listMode: "hide",
       elevationInfo: {
         mode: "absolute-height",
       },
@@ -102,6 +102,7 @@ function MapViewer() {
     // all vertices
     const editVerticesLayer = new GraphicsLayer({
       title: "Edit Vertices",
+      listMode: "hide",
       elevationInfo: {
         mode: "absolute-height",
       },
@@ -112,14 +113,40 @@ function MapViewer() {
     const initialize = async () => {
       const layers = await getLayersList(config);
 
+      // Layers Widget
+      // Keep track of GroupLayers that we have already created
+      const groupLayers = new Map<string, GroupLayer>();
+
+      // Layers Widget
       layers.forEach((layerInfo: LayerInfo) => {
+        const schema = layerInfo.layer_name.substring(0, 3);
+
+        
+        // Create the GroupLayer only once for each schema
+        let groupLayer = groupLayers.get(schema);
+
+        if (!groupLayer) {
+          groupLayer = new GroupLayer({
+            title: schema,
+            visible: true,
+          });
+
+          // Add the group to the map
+          map.add(groupLayer);
+
+          groupLayers.set(schema, groupLayer);
+        }
+
         const graphicsLayer = new GraphicsLayer({
           title: layerInfo.alias,
           visible: layerInfo.visible,
           elevationInfo: { mode: "absolute-height" },
         });
 
-        map.add(graphicsLayer);
+        //  Add GraphicsLayer INSIDE its schema GroupLayer
+        groupLayer.add(graphicsLayer);
+
+        
         layerManagerRef.current[layerInfo.layer_name] = {
           graphicsLayer,
           color: layerInfo.color,
@@ -130,6 +157,8 @@ function MapViewer() {
           renderer_type: layerInfo.renderer_type,
         };
       });
+
+     
     };
     initialize();
 
@@ -219,7 +248,7 @@ function MapViewer() {
         },
         config,
       );
-      console.log("selected:", result.data);
+
       setSelectedFeature({
         ...result.data,
         layerName: graphic.attributes.layerName,
