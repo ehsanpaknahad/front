@@ -29,6 +29,17 @@ export interface LayerManagerItem {
   maxZoom: number;
   layerName: string;
   renderer_type: string;
+
+  // This is the user's desired visibility.
+  // It is initialized from layers_list.visible and
+  // later changed by the ArcGIS Layer List.
+  userVisible: boolean;
+
+  // This represents whether the current zoom allows
+  // the layer to be displayed.
+  // We keep this separate from userVisible so that
+  // zoom logic never changes the user's preference.
+  zoomAllowed: boolean;
 }
 
 export interface LayerManager {
@@ -114,15 +125,11 @@ function MapViewer() {
       const layers = await getLayersList(config);
 
       // Layers Widget
-      // Keep track of GroupLayers that we have already created
       const groupLayers = new Map<string, GroupLayer>();
 
-      // Layers Widget
       layers.forEach((layerInfo: LayerInfo) => {
         const schema = layerInfo.layer_name.substring(0, 3);
 
-        
-        // Create the GroupLayer only once for each schema
         let groupLayer = groupLayers.get(schema);
 
         if (!groupLayer) {
@@ -131,7 +138,6 @@ function MapViewer() {
             visible: true,
           });
 
-          // Add the group to the map
           map.add(groupLayer);
 
           groupLayers.set(schema, groupLayer);
@@ -143,10 +149,8 @@ function MapViewer() {
           elevationInfo: { mode: "absolute-height" },
         });
 
-        //  Add GraphicsLayer INSIDE its schema GroupLayer
         groupLayer.add(graphicsLayer);
 
-        
         layerManagerRef.current[layerInfo.layer_name] = {
           graphicsLayer,
           color: layerInfo.color,
@@ -155,11 +159,61 @@ function MapViewer() {
           maxZoom: layerInfo.max_zoom,
           layerName: layerInfo.layer_name,
           renderer_type: layerInfo.renderer_type,
+
+          // ⭐ CHANGED
+          userVisible: layerInfo.visible,
+
+          // ⭐ CHANGED
+          zoomAllowed: true,
         };
       });
 
-     
+      // ============================================================
+      // ⭐ CHANGED — WATCH LAYER LIST VISIBILITY CHANGES
+      // ============================================================
+      //
+      // arcgis-layer-list does not emit a visibility event.
+      // Esri recommends watching the Layer.visible property.
+      //
+      Object.values(layerManagerRef.current).forEach((layerInfo) => {
+        reactiveUtils.watch(
+          () => layerInfo.graphicsLayer.visible,
+          (visible) => {
+            const view = viewRef.current;
+
+            if (!view) return;
+
+            const zoom = view.zoom;
+
+            const zoomAllowed =
+              zoom >= layerInfo.minZoom && zoom <= layerInfo.maxZoom;
+
+            const expectedVisible = layerInfo.userVisible && zoomAllowed;
+
+            // ------------------------------------------------
+            // The visibility matches what our zoom logic expects.
+            // Therefore this was NOT a user action.
+            // ------------------------------------------------
+            if (visible === expectedVisible) {
+              return;
+            }
+
+            // ------------------------------------------------
+            // The visibility differs from what our application
+            // expects, therefore the user changed it in Layer List.
+            // ------------------------------------------------
+            layerInfo.userVisible = visible;
+
+            // Keep zoomAllowed updated
+            layerInfo.zoomAllowed = zoomAllowed;
+          },
+        );
+      });
     };
+
+    // ⭐ CHANGED:
+    // Make sure initialization completes before we rely on
+    // the layer manager.
     initialize();
 
     const debouncedFetch = debounce(async (extent: Extent) => {
@@ -199,13 +253,25 @@ function MapViewer() {
       },
     );
 
+    // ============================================================
+    //  — CENTRAL VISIBILITY CALCULATION
+    // ============================================================
+
+    const updateLayerVisibility = (layer: LayerManagerItem, zoom: number) => {
+      const zoomAllowed = zoom >= layer.minZoom && zoom <= layer.maxZoom;
+
+      layer.zoomAllowed = zoomAllowed;
+
+      const effectiveVisible = layer.userVisible && layer.zoomAllowed;
+
+      layer.graphicsLayer.visible = effectiveVisible;
+    };
+
     const zoomHandle = reactiveUtils.watch(
       () => view.zoom,
       (zoom) => {
-        //console.log('Current zoom:', zoom); // Add this line
-        Object.values(layerManagerRef.current).forEach((layer: any) => {
-          layer.graphicsLayer.visible =
-            zoom >= layer.minZoom && zoom <= layer.maxZoom;
+        Object.values(layerManagerRef.current).forEach((layer) => {
+          updateLayerVisibility(layer, zoom);
         });
       },
     );
