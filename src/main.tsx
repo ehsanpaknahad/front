@@ -4,8 +4,12 @@ import esriConfig from "@arcgis/core/config.js";
 import App from "./App.tsx";
 import "@fontsource/poppins"; // Defaults to 400 weight
 import { AuthProvider } from "./auth/AuthProvider.js";
+ 
+import { setAssetPath as setMapAssetPath } from "@arcgis/map-components";
 
  
+ 
+setMapAssetPath("/assets/");
 
 import "@arcgis/map-components/components/arcgis-layer-list";
  
