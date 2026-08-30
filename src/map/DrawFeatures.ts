@@ -1,10 +1,9 @@
- 
 import createGraphic from "./CreateGraphic";
 
 const drawFeatures = (
   layerName: string,
   features: any[],
-  layerManagerRef: any
+  layerManagerRef: any,
 ) => {
   const layerInfo = layerManagerRef.current[layerName];
   if (!layerInfo) return;
@@ -14,34 +13,20 @@ const drawFeatures = (
 
  
 
-  const newIds = new Set(
-    features.map(feature => feature.id)
-  );
-
-  // Remove features that are no longer in the current extent
-  graphicsMap.forEach((graphic, id) => {
-    if (!newIds.has(id)) {
-      graphicsLayer.remove(graphic);
-      graphicsMap.delete(id);
-    }
-  });
-
   const graphics = [];
 
   for (const feature of features) {
-
-    if (graphicsMap.has(feature.id))
+     
+    if (graphicsMap.has(String(feature.id))) {
       continue;
+    }
+    const graphic = createGraphic(feature, layerInfo);
 
-    const graphic = createGraphic(feature,layerInfo);
-
-    if (!graphic)
-     continue;
+    if (!graphic) continue;
 
     graphics.push(graphic);
 
     graphicsMap.set(String(feature.id), graphic);
-
   }
 
   graphicsLayer.addMany(graphics);

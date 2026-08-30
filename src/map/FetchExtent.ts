@@ -1,11 +1,11 @@
-
 import axios from "axios";
-
+import TileManager from "./TileManager";
 
 const fetchExtent = async (
-  extent: Extent,
+  tiles: any[],
   layerManagerRef: any,
-  config: any
+  tileManager: TileManager,
+  config: any,
 ) => {
   const layerNames = Object.keys(layerManagerRef.current);
 
@@ -14,15 +14,25 @@ const fetchExtent = async (
     return;
   }
 
+  if (tiles.length === 0) {
+    return;
+  }
+
   try {
+    const tilesWithExtent = tiles.map((tile) => {
+      const tileExtent = tileManager.getTileExtent(tile);
+
+      return {
+        ...tile,
+        ...tileExtent,
+      };
+    });
+
     const response = await axios.post(
       "/api/query-with-extent",
       {
-        minX: extent.xmin,
-        minY: extent.ymin,
-        maxX: extent.xmax,
-        maxY: extent.ymax,
         layerNames,
+        tiles: tilesWithExtent,
       },
       config,
     );
@@ -30,6 +40,7 @@ const fetchExtent = async (
     return response.data;
   } catch (error) {
     console.error("Database query failed:", error);
+
     throw error;
   }
 };

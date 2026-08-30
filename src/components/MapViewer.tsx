@@ -20,6 +20,7 @@ import Point from "@arcgis/core/geometry/Point.js";
 import Polygon from "@arcgis/core/geometry/Polygon.js";
 
 import GroupLayer from "@arcgis/core/layers/GroupLayer.js";
+import TileManager from "../map/TileManager.js";
 
 export interface LayerManagerItem {
   graphicsLayer: GraphicsLayer;
@@ -51,6 +52,7 @@ function MapViewer() {
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const layerManagerRef = useRef<LayerManager>({});
+  const tileManagerRef = useRef(new TileManager());
   const selectedGraphicRef = useRef<any>(null);
   const selectedFeatureRef = useRef<{
     layerName: string;
@@ -217,30 +219,82 @@ function MapViewer() {
     initialize();
 
     const debouncedFetch = debounce(async (extent: Extent) => {
-      const data = await fetchExtent(extent, layerManagerRef, config);
+      const tiles = tileManagerRef.current.getTilesForExtent(extent);
+
+      const missingTiles = tiles.filter(
+        (tile) => !tileManagerRef.current.has(tile.id),
+      );
+
+      if (missingTiles.length === 0) {
+        console.log("All visible tiles are cached");
+        return;
+      }
+
+      console.log(
+        "Missing tile IDs:",
+        missingTiles.map((tile) => tile.id),
+      );
+
+      const data = await fetchExtent(
+        missingTiles,
+        layerManagerRef,
+        tileManagerRef.current,
+        config,
+      );
 
       if (!data) return;
+      console.log("SERVER RESPONSE:", data);
+      /*
+    data structure:
 
-      Object.entries(data).forEach(([layerName, features]) => {
-        if (layerName.includes("_error")) {
-          console.error(features);
-          return;
-        }
+    {
+      "10_20": {
+        oilpip: [...],
+        oilvav: [...]
+      },
 
-        drawFeatures(layerName, features, layerManagerRef);
+      "11_20": {
+        oilpip: [...]
+      }
+    }
+  */
 
-        // Re-apply selection after the layer has been redrawn
-        const selected = selectedFeatureRef.current;
+      Object.entries(data).forEach(([tileId, tileData]) => {
+        /*
+        Store REAL tile data.
 
-        if (selected && selected.layerName === layerName) {
-          const layerInfo = layerManagerRef.current[layerName];
+        This replaces the old:
 
-          const newGraphic = layerInfo?.graphicsMap.get(String(selected.id));
+        { loaded: true }
+      */
 
-          if (newGraphic) {
-            highlightGraphic(newGraphic, selectedGraphicRef);
-          }
-        }
+        tileManagerRef.current.set(tileId, tileData);
+
+        console.log("Tile cache:", tileManagerRef.current.get(tileId));
+        /*
+        Draw every layer inside this tile.
+      */
+
+        Object.entries(tileData as Record<string, any[]>).forEach(
+          ([layerName, features]) => {
+            drawFeatures(layerName, features, layerManagerRef);
+
+            // Re-apply selection
+            const selected = selectedFeatureRef.current;
+
+            if (selected && selected.layerName === layerName) {
+              const layerInfo = layerManagerRef.current[layerName];
+
+              const newGraphic = layerInfo?.graphicsMap.get(
+                String(selected.id),
+              );
+
+              if (newGraphic) {
+                highlightGraphic(newGraphic, selectedGraphicRef);
+              }
+            }
+          },
+        );
       });
     }, 1500);
 
