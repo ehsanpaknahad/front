@@ -22,6 +22,9 @@ import Polygon from "@arcgis/core/geometry/Polygon.js";
 import GroupLayer from "@arcgis/core/layers/GroupLayer.js";
 import TileManager from "../map/TileManager.js";
 
+import RenderedTileManager from "../map/RenderedTileManager.js";
+import removeFeatures from "../map/RemoveFeatures.js";
+
 export interface LayerManagerItem {
   graphicsLayer: GraphicsLayer;
   color: string;
@@ -53,6 +56,7 @@ function MapViewer() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const layerManagerRef = useRef<LayerManager>({});
   const tileManagerRef = useRef(new TileManager());
+  const renderedTileManagerRef = useRef(new RenderedTileManager());
   const selectedGraphicRef = useRef<any>(null);
   const selectedFeatureRef = useRef<{
     layerName: string;
@@ -219,14 +223,70 @@ function MapViewer() {
     initialize();
 
     const debouncedFetch = debounce(async (extent: Extent) => {
-      const tiles = tileManagerRef.current.getTilesForExtent(extent);
+      const tileManager = tileManagerRef.current;
 
-      const missingTiles = tiles.filter(
-        (tile) => !tileManagerRef.current.has(tile.id),
-      );
+      const renderedTileManager = renderedTileManagerRef.current;
+
+      // ============================================
+      // 1. Calculate visible tiles
+      // ============================================
+
+      const visibleTiles = tileManager.getTilesForExtent(extent);
+
+      const visibleTileIds = new Set(visibleTiles.map((tile) => tile.id));
+
+      // ============================================
+      // 2. Remove tiles that are no longer visible
+      // ============================================
+
+      const renderedTileIds = renderedTileManager.getRenderedTileIds();
+
+      renderedTileIds.forEach((tileId) => {
+        if (visibleTileIds.has(tileId)) {
+          return;
+        }
+
+        const featuresToRemove = renderedTileManager.removeTile(tileId);
+
+        Object.entries(featuresToRemove).forEach(([layerName, featureIds]) => {
+          removeFeatures(layerName, featureIds, layerManagerRef);
+        });
+      });
+
+      // ============================================
+      // 3. Tiles already cached
+      // ============================================
+
+      const cachedTiles = visibleTiles.filter((tile) => {
+        return (
+          tileManager.has(tile.id) && !renderedTileManager.hasTile(tile.id)
+        );
+      });
+
+      // Render cached tiles immediately
+      cachedTiles.forEach((tile) => {
+        const tileData = tileManager.get(tile.id);
+
+        if (!tileData) return;
+
+        const featuresToAdd = renderedTileManager.addTile(tile.id, tileData);
+
+        Object.entries(featuresToAdd).forEach(([layerName, features]) => {
+          drawFeatures(layerName, features, layerManagerRef);
+        });
+      });
+
+      // ============================================
+      // 4. Find missing tiles
+      // ============================================
+
+      const missingTiles = visibleTiles.filter((tile) => {
+        return !tileManager.has(tile.id);
+      });
 
       if (missingTiles.length === 0) {
-        console.log("All visible tiles are cached");
+        console.log("Visible tiles rendered from cache");
+
         return;
       }
 
@@ -235,67 +295,63 @@ function MapViewer() {
         missingTiles.map((tile) => tile.id),
       );
 
+      // ============================================
+      // 5. Download missing tiles
+      // ============================================
+
       const data = await fetchExtent(
         missingTiles,
         layerManagerRef,
-        tileManagerRef.current,
+        tileManager,
         config,
       );
 
       if (!data) return;
-      console.log("SERVER RESPONSE:", data);
-      /*
-    data structure:
 
-    {
-      "10_20": {
-        oilpip: [...],
-        oilvav: [...]
-      },
-
-      "11_20": {
-        oilpip: [...]
-      }
-    }
-  */
+      // ============================================
+      // 6. Cache + render downloaded tiles
+      // ============================================
 
       Object.entries(data).forEach(([tileId, tileData]) => {
-        /*
-        Store REAL tile data.
+        // Store data permanently in cache
+        tileManager.set(tileId, tileData);
 
-        This replaces the old:
+        // Important:
+        // The user may have moved while
+        // the database request was running.
+        // Only render if tile is still visible.
 
-        { loaded: true }
-      */
+        if (!visibleTileIds.has(tileId)) {
+          return;
+        }
 
-        tileManagerRef.current.set(tileId, tileData);
-
-        console.log("Tile cache:", tileManagerRef.current.get(tileId));
-        /*
-        Draw every layer inside this tile.
-      */
-
-        Object.entries(tileData as Record<string, any[]>).forEach(
-          ([layerName, features]) => {
-            drawFeatures(layerName, features, layerManagerRef);
-
-            // Re-apply selection
-            const selected = selectedFeatureRef.current;
-
-            if (selected && selected.layerName === layerName) {
-              const layerInfo = layerManagerRef.current[layerName];
-
-              const newGraphic = layerInfo?.graphicsMap.get(
-                String(selected.id),
-              );
-
-              if (newGraphic) {
-                highlightGraphic(newGraphic, selectedGraphicRef);
-              }
-            }
-          },
+        // Convert cached tile data into
+        // features that really need rendering.
+        const featuresToAdd = renderedTileManager.addTile(
+          tileId,
+          tileData as Record<string, any[]>,
         );
+
+        Object.entries(featuresToAdd).forEach(([layerName, features]) => {
+          drawFeatures(layerName, features, layerManagerRef);
+        });
       });
+
+      // ============================================
+      // 7. Re-apply selected feature
+      // ============================================
+
+      const selected = selectedFeatureRef.current;
+
+      if (selected) {
+        const layerInfo = layerManagerRef.current[selected.layerName];
+
+        const newGraphic = layerInfo?.graphicsMap.get(String(selected.id));
+
+        if (newGraphic) {
+          highlightGraphic(newGraphic, selectedGraphicRef);
+        }
+      }
     }, 1500);
 
     const handleWatch = reactiveUtils.watch(
