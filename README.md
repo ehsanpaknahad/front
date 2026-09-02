@@ -1,4 +1,4 @@
- ## public.layers_list      this table includes layers info  
+## public.layers_list this table includes layers info
 
 ## pipelines always should have a Size field . s should be Capital . this field use for rendering .
 
@@ -53,13 +53,15 @@ The rebuilt structure should contain:
 
 public/
 └── assets/
-    ├── components/
-    │   ├── calcite-action/
-    │   ├── calcite-action-bar/
-    │   ├── calcite-action-group/
-    │   ├── ...
-    │   └── ...
-    ├── ...
-    └── ArcGIS Core assets
+├── components/
+│ ├── calcite-action/
+│ ├── calcite-action-bar/
+│ ├── calcite-action-group/
+│ ├── ...
+│ └── ...
+├── ...
+└── ArcGIS Core assets
 
 This issue can occur after switching Git branches, pulling the project on another computer, reinstalling node_modules, or rebuilding the project when the manually copied public/assets files are not present.
+
+geometry type inside public.layers_list table should have this types : "Point" | "LineString" | "Polygon";

@@ -377,7 +377,6 @@ form {
   left: 50%; /* move left edge to center */
   transform: translateX(-50%); /* shift left by half width */
 }
-  
 
 .close-overlay-btn:hover {
   box-shadow: 0 6px 14px rgba(255, 141, 33, 0.4);
@@ -414,7 +413,25 @@ form {
   opacity: 1 !important;
   visibility: visible !important;
 }
- 
+
+.view-mode-control {
+  position: absolute;
+  left: 16px;
+  bottom: 26px;
+  z-index: 10;
+  display: flex;
+
+  background: var(--calcite-color-foreground-1);
+
+  border: 1px solid var(--calcite-color-border-2);
+  border-radius: 8px;
+
+  overflow: hidden;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+
 
 .feature-panel {
   position: absolute;

@@ -33,7 +33,7 @@ export interface LayerManagerItem {
   maxZoom: number;
   layerName: string;
   renderer_type: string;
-
+  geometryType: "Point" | "LineString" | "Polygon";
   // This is the user's desired visibility.
   // It is initialized from layers_list.visible and
   // later changed by the ArcGIS Layer List.
@@ -51,6 +51,7 @@ export interface LayerManager {
 }
 
 function MapViewer() {
+  const [viewMode, setViewMode] = useState<"top" | "3d">("3d");
   const mapRef = useRef(null);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -99,6 +100,7 @@ function MapViewer() {
           z: 400, // height in meters
           spatialReference: { wkid: 4326 }, // WGS84 geographic
         },
+        heading: 0,
         tilt: 40,
       },
     });
@@ -113,8 +115,10 @@ function MapViewer() {
         mode: "absolute-height",
       },
     });
-    selectedVertexLayerRef.current = vertexLayer;
+
     map.add(vertexLayer);
+
+    selectedVertexLayerRef.current = vertexLayer;
 
     // all vertices
     const editVerticesLayer = new GraphicsLayer({
@@ -128,93 +132,100 @@ function MapViewer() {
     map.add(editVerticesLayer);
 
     const initialize = async () => {
-      const layers = await getLayersList(config);
+      try {
+        const layers = await getLayersList(config);
 
-      // Layers Widget
-      const groupLayers = new Map<string, GroupLayer>();
+        // make a Map of
+        const groupLayers = new Map<string, GroupLayer>();
 
-      layers.forEach((layerInfo: LayerInfo) => {
-        const schema = layerInfo.layer_name.substring(0, 3);
+        layers.forEach((layerInfo: LayerInfo) => {
+          const schema = layerInfo.layer_name.substring(0, 3);
 
-        let groupLayer = groupLayers.get(schema);
+          let groupLayer = groupLayers.get(schema);
 
-        if (!groupLayer) {
-          groupLayer = new GroupLayer({
-            title: schema,
-            visible: true,
+          if (!groupLayer) {
+            groupLayer = new GroupLayer({
+              title: schema,
+              visible: true,
+            });
+
+            map.add(groupLayer);
+
+            groupLayers.set(schema, groupLayer);
+          }
+
+          const graphicsLayer = new GraphicsLayer({
+            title: layerInfo.alias,
+            appGeometryType: layerInfo.geometry_type,
+            visible: layerInfo.visible,
+            elevationInfo: { mode: "absolute-height" },
           });
 
-          map.add(groupLayer);
+          groupLayer.add(graphicsLayer);
 
-          groupLayers.set(schema, groupLayer);
-        }
+          layerManagerRef.current[layerInfo.layer_name] = {
+            graphicsLayer,
+            color: layerInfo.color,
+            graphicsMap: new Map(),
+            minZoom: layerInfo.min_zoom,
+            maxZoom: layerInfo.max_zoom,
+            layerName: layerInfo.layer_name,
+            renderer_type: layerInfo.renderer_type,
+            geometryType: layerInfo.geometry_type,
 
-        const graphicsLayer = new GraphicsLayer({
-          title: layerInfo.alias,
-          visible: layerInfo.visible,
-          elevationInfo: { mode: "absolute-height" },
+            userVisible: layerInfo.visible,
+
+            zoomAllowed: true,
+          };
         });
 
-        groupLayer.add(graphicsLayer);
+        // ============================================================
+        // ⭐ CHANGED — WATCH LAYER LIST VISIBILITY CHANGES
+        // ============================================================
+        //
+        // arcgis-layer-list does not emit a visibility event.
+        // Esri recommends watching the Layer.visible property.
+        //
+        Object.values(layerManagerRef.current).forEach((layerInfo) => {
+          reactiveUtils.watch(
+            () => layerInfo.graphicsLayer.visible,
+            (visible) => {
+              const view = viewRef.current;
 
-        layerManagerRef.current[layerInfo.layer_name] = {
-          graphicsLayer,
-          color: layerInfo.color,
-          graphicsMap: new Map(),
-          minZoom: layerInfo.min_zoom,
-          maxZoom: layerInfo.max_zoom,
-          layerName: layerInfo.layer_name,
-          renderer_type: layerInfo.renderer_type,
+              if (!view) return;
 
-          // ⭐ CHANGED
-          userVisible: layerInfo.visible,
+              const zoom = view.zoom;
 
-          // ⭐ CHANGED
-          zoomAllowed: true,
-        };
-      });
+              const zoomAllowed =
+                zoom >= layerInfo.minZoom && zoom <= layerInfo.maxZoom;
 
-      // ============================================================
-      // ⭐ CHANGED — WATCH LAYER LIST VISIBILITY CHANGES
-      // ============================================================
-      //
-      // arcgis-layer-list does not emit a visibility event.
-      // Esri recommends watching the Layer.visible property.
-      //
-      Object.values(layerManagerRef.current).forEach((layerInfo) => {
-        reactiveUtils.watch(
-          () => layerInfo.graphicsLayer.visible,
-          (visible) => {
-            const view = viewRef.current;
+              const expectedVisible = layerInfo.userVisible && zoomAllowed;
 
-            if (!view) return;
+              // ------------------------------------------------
+              // The visibility matches what our zoom logic expects.
+              // Therefore this was NOT a user action.
+              // ------------------------------------------------
+              if (visible === expectedVisible) {
+                return;
+              }
 
-            const zoom = view.zoom;
+              // ------------------------------------------------
+              // The visibility differs from what our application
+              // expects, therefore the user changed it in Layer List.
+              // ------------------------------------------------
+              layerInfo.userVisible = visible;
 
-            const zoomAllowed =
-              zoom >= layerInfo.minZoom && zoom <= layerInfo.maxZoom;
+              // Keep zoomAllowed updated
+              layerInfo.zoomAllowed = zoomAllowed;
+            },
+          );
+        });
 
-            const expectedVisible = layerInfo.userVisible && zoomAllowed;
-
-            // ------------------------------------------------
-            // The visibility matches what our zoom logic expects.
-            // Therefore this was NOT a user action.
-            // ------------------------------------------------
-            if (visible === expectedVisible) {
-              return;
-            }
-
-            // ------------------------------------------------
-            // The visibility differs from what our application
-            // expects, therefore the user changed it in Layer List.
-            // ------------------------------------------------
-            layerInfo.userVisible = visible;
-
-            // Keep zoomAllowed updated
-            layerInfo.zoomAllowed = zoomAllowed;
-          },
-        );
-      });
+        console.log("========== LAYER INITIALIZATION DONE ==========");
+      } catch (error) {
+        console.error("========== LAYER INITIALIZATION FAILED ==========");
+        console.error(error);
+      }
     };
 
     // ⭐ CHANGED:
@@ -532,9 +543,50 @@ function MapViewer() {
   }, [selectedVertex]);
 
   useEffect(() => {
-    if (activeTool === "layer" && layerListRef.current && viewRef.current) {
-      layerListRef.current.view = viewRef.current;
+    if (activeTool !== "layer" || !layerListRef.current || !viewRef.current) {
+      return;
     }
+
+    const layerList = layerListRef.current;
+
+    layerList.view = viewRef.current;
+
+    layerList.listItemCreatedFunction = (event) => {
+      const item = event.item;
+
+      // Schema / GroupLayer
+      if (item.layer.type === "group") {
+        return;
+      }
+
+      const geometryType = (item.layer as any).appGeometryType;
+
+      let icon = "layer";
+
+      switch (geometryType) {
+        case "Point":
+          icon = "bullet-point-large";
+          break;
+
+        case "LineString":
+          icon = "line-straight";
+          break;
+
+        case "Polygon":
+          icon = "polygon";
+          break;
+      }
+
+      item.actionsSections = [
+        [
+          {
+            id: "geometry-type",
+            title: geometryType,
+            icon: icon,
+          },
+        ],
+      ];
+    };
   }, [activeTool]);
 
   const handleVertexClick = (coordinate, index) => {
@@ -790,6 +842,55 @@ function MapViewer() {
     setActiveTool((current) => (current === tool ? null : tool));
   };
 
+  const changeViewMode = async (mode: "top" | "3d") => {
+    const view = viewRef.current;
+
+    if (!view) {
+      console.warn("SceneView is not available");
+      return;
+    }
+
+    if (viewMode === mode) {
+      return;
+    }
+
+    try {
+      const camera = view.camera.clone();
+
+      if (mode === "top") {
+        camera.tilt = 0;
+      } else {
+        camera.tilt = 55;
+      }
+
+      console.log("Changing camera:", {
+        mode,
+        heading: camera.heading,
+        tilt: camera.tilt,
+        position: camera.position,
+      });
+
+      await view.goTo(camera, {
+        duration: 600,
+        easing: "ease-in-out",
+      });
+
+      setViewMode(mode);
+
+      console.log(`View changed to ${mode}`);
+    } catch (error) {
+      console.error("Camera change failed:", error);
+    }
+  };
+
+  const setTopView = () => {
+    changeViewMode("top");
+  };
+
+  const set3DView = () => {
+    changeViewMode("3d");
+  };
+
   return (
     <calcite-shell content-behind>
       {/* ===================================================== */}
@@ -797,6 +898,28 @@ function MapViewer() {
       {/* ===================================================== */}
 
       <div ref={mapRef} className="map-view" />
+
+      {/* ===================================================== */}
+      {/* VIEW MODE CONTROL                                     */}
+      {/* ===================================================== */}
+
+      <div className="view-mode-control">
+        <calcite-action
+          text="Top"
+          icon="arrow-up"
+          text-enabled
+          active={viewMode === "top"}
+          onClick={setTopView}
+        />
+
+        <calcite-action
+          text="3D"
+          icon="cube"
+          text-enabled
+          active={viewMode === "3d"}
+          onClick={set3DView}
+        />
+      </div>
 
       {/* ===================================================== */}
       {/* RIGHT SIDE SHELL PANEL                                */}
@@ -856,7 +979,10 @@ function MapViewer() {
 
         {activeTool === "layer" && (
           <calcite-panel heading="Layers">
-            <arcgis-layer-list ref={layerListRef} />
+            <arcgis-layer-list
+              visibility-appearance="checkbox"
+              ref={layerListRef}
+            />
           </calcite-panel>
         )}
 
